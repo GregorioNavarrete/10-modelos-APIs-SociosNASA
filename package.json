@@ -1,0 +1,26 @@
+{
+  "name": "spaceapps10",
+  "version": "1.0.0",
+  "private": true,
+  "description": "10 aplicaciones para NASA Space Apps Challenge 2026: HTML, CSS, JavaScript y Express con datos abiertos de NASA, ESA, JAXA, INPE, CONAE y NOAA.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.js",
+    "dev": "node --watch --env-file-if-exists=.env server.js",
+    "snapshot": "node scripts/snapshot.js"
+  },
+  "engines": {
+    "node": ">=20.6"
+  },
+  "keywords": [
+    "nasa",
+    "space-apps",
+    "copernicus",
+    "open-data",
+    "express"
+  ],
+  "license": "Apache-2.0",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

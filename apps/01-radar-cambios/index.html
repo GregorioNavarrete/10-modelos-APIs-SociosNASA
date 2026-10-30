@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="es" data-theme="oscuro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>01 · Radar de Cambios — Space Apps 10</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-in">
+      <a class="marca" href="/"><span class="marca-simbolo">✦</span><span>Space Apps 10<small>RADAR DE CAMBIOS</small></span></a>
+      <span class="espacio"></span>
+      <a class="volver" href="/">← Panel</a>
+      <button class="tema" data-tema-boton aria-label="Cambiar tema"><span class="tema-icono">☀</span></button>
+    </div>
+  </header>
+
+  <div class="wrap app-head">
+    <p class="eyebrow">App 01 · Observación de la Tierra · SAR</p>
+    <h1 class="titulo">Radar de Cambios</h1>
+    <p class="bajada">Serie temporal de Sentinel-1 sobre un área de interés: cuántos pases hay, cada cuánto, qué modos y cuántos pares interferométricos se pueden formar. La base para detectar inundaciones y subsidencia.</p>
+    <div class="chips">
+      <span class="chip vivo" id="chip-fuente">consultando</span>
+      <span class="chip"><b>ESA</b> Copernicus</span>
+      <span class="chip"><b>NASA</b> ASF / NISAR</span>
+      <span class="chip"><b>CONAE</b> SAOCOM</span>
+      <span class="chip">Reto: Dancing with the SARs</span>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="tabs" role="tablist" aria-label="Secciones de la app">
+      <button class="tab activo" data-tab="datos" role="tab" aria-selected="true">01 · Datos y solución</button>
+      <button class="tab" data-tab="docs" role="tab" aria-selected="false">02 · Documentación</button>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <!-- ================= SOLAPA 1 ================= -->
+    <section class="panel activo" data-panel="datos">
+      <div class="grid grid-4" style="margin-top:18px">
+        <div class="tarjeta"><span class="kicker">Escenas encontradas</span><div class="metric" id="m-escenas">—</div><span class="delta" id="m-escenas-sub">en la ventana</span></div>
+        <div class="tarjeta"><span class="kicker">Último pase</span><div class="metric" id="m-ultimo" style="font-size:26px">—</div><span class="delta" id="m-ultimo-sub">—</span></div>
+        <div class="tarjeta"><span class="kicker">Cadencia media</span><div class="metric" id="m-cadencia">—</div><span class="delta">entre días con pase</span></div>
+        <div class="tarjeta"><span class="kicker">Pares potenciales</span><div class="metric" id="m-pares">—</div><span class="delta">para interferometría</span></div>
+      </div>
+
+      <div class="grid grid-2-1" style="margin-top:16px">
+        <div class="tarjeta">
+          <div class="fila-titulo"><h2>Área de interés</h2><span class="badge" id="badge-aoi">—</span></div>
+          <div id="mapa" class="mapa" role="img" aria-label="Mapa del área de interés"></div>
+          <p class="aviso" style="margin-top:10px">Sentinel-1 no entrega un punto por producto en el catálogo OData: el mapa muestra el AOI consultado y el rectángulo de búsqueda. Los productos se listan en la tabla inferior.</p>
+        </div>
+        <div class="tarjeta">
+          <span class="kicker">Consulta</span>
+          <h2>Elegí el área y la ventana</h2>
+          <div class="grid" style="gap:10px;margin-top:10px">
+            <label class="campo">Latitud<input id="lat" type="number" step="0.01" value="-34.60"></label>
+            <label class="campo">Longitud<input id="lon" type="number" step="0.01" value="-58.40"></label>
+            <label class="campo">Ventana (días)<input id="dias" type="number" min="20" max="365" step="10" value="120"></label>
+            <button class="boton" id="btn-consultar">Consultar catálogo</button>
+          </div>
+          <div class="presets" role="group" aria-label="Áreas predefinidas">
+            <button class="preset" data-lat="-34.60" data-lon="-58.40">Buenos Aires</button>
+            <button class="preset" data-lat="-24.78" data-lon="-65.42">Salta</button>
+            <button class="preset" data-lat="-31.40" data-lon="-64.20">Córdoba</button>
+            <button class="preset" data-lat="-51.62" data-lon="-69.22">Patagonia</button>
+          </div>
+          <p class="nota">Cada consulta usa un recuadro de ±0,28° (~60 km de lado). El catálogo es abierto; la descarga de productos requiere cuenta Copernicus.</p>
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="margin-top:16px">
+        <div class="tarjeta">
+          <h2>Escenas por mes</h2>
+          <p>Volumen de productos Sentinel-1 en el AOI. La forma de la serie anticipa la disponibilidad de pares.</p>
+          <div id="chart-mes"></div>
+        </div>
+        <div class="tarjeta">
+          <h2>Composición del catálogo</h2>
+          <p>Modos y tipos de producto. Para cambio de superficie conviene GRD; para interferometría, SLC.</p>
+          <div id="chart-tipo"></div>
+          <div class="leyenda" id="leyenda-tipo"></div>
+        </div>
+      </div>
+
+      <div class="tarjeta" style="margin-top:16px">
+        <div class="fila-titulo"><h2>Últimos productos</h2><button class="boton secundario" id="btn-csv">Descargar JSON</button></div>
+        <div class="tabla-wrap" style="max-height:340px">
+          <table>
+            <thead><tr><th>Fecha</th><th>Producto</th><th>Modo</th><th>Tipo</th><th class="num">Tamaño</th><th>Estado</th></tr></thead>
+            <tbody id="tabla-escenas"><tr><td colspan="6">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="margin-top:16px">
+        <div class="tarjeta solucion">
+          <span class="kicker">Modelo de negocio</span>
+          <h2>Quién paga por saber qué cambió</h2>
+          <p><strong>Problema:</strong> municipios y aseguradoras detectan inundaciones cuando ya ocurrieron; los datos SAR existen pero no se traducen a decisiones.</p>
+          <ul class="lista">
+            <li><b>Usuario primario:</b> defensa civil provincial y municipios ribereños.</li>
+            <li><b>Usuario secundario:</b> aseguradoras agropecuarias y operadores de infraestructura.</li>
+            <li><b>Ingreso:</b> suscripción mensual por distrito + informes de evento (pay-per-event).</li>
+            <li><b>Costo:</b> datos Copernicus gratuitos; el costo real es cómputo InSAR y validación humana.</li>
+          </ul>
+        </div>
+        <div class="tarjeta solucion">
+          <span class="kicker">Solución probable</span>
+          <h2>De catálogo a alerta en tres pasos</h2>
+          <div class="pasos">
+            <div class="paso"><p><b>Elegir pares:</b> filtrar por órbita, modo y separación temporal (&lt; 12 días) usando este catálogo.</p></div>
+            <div class="paso"><p><b>Procesar:</b> InSAR (SNAPHU/MintPy o un servicio openEO) para mapa de deformación.</p></div>
+            <div class="paso"><p><b>Traducir:</b> umbral de cambio + capa de vulnerabilidad → alerta con hora, zona y confianza.</p></div>
+          </div>
+          <p class="aviso" style="margin-top:10px">Esta demo cubre el paso 1 y declara el límite: no procesa interferogramas en el navegador.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SOLAPA 2 ================= -->
+    <section class="panel" data-panel="docs" hidden>
+      <div class="doc grid" style="margin-top:18px">
+        <div class="tarjeta">
+          <h2>Qué API usa esta app</h2>
+          <table>
+            <thead><tr><th>Fuente</th><th>Uso</th><th>Auth</th><th>Límite / nota</th></tr></thead>
+            <tbody>
+              <tr><td>CDSE OData</td><td>Catálogo Sentinel-1 por AOI y fecha</td><td>Abierta</td><td>Paginación con <code>$top</code>/<code>$skip</code></td></tr>
+              <tr><td>CDSE STAC</td><td>Alternativa para assets COG</td><td>Abierta</td><td>Ideal para nubes</td></tr>
+              <tr><td>ASF Search</td><td>NISAR y Sentinel-1 (EE. UU.)</td><td>Abierta</td><td>Documentada; en esta red no respondió</td></tr>
+              <tr><td>Copernicus DEM</td><td>Modelo de elevación para corregir</td><td>Abierta</td><td>30 m / 90 m</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Cómo se usa (ejemplo real)</h2>
+          <pre><code>curl "https://catalogue.dataspace.copernicus.eu/odata/v1/Products?\$filter=Collection/Name%20eq%20'SENTINEL-1'%20and%20OData.CSC.Intersects(area=geography'SRID=4326;POLYGON((-58.6%20-34.8,-58.2%20-34.8,-58.2%20-34.4,-58.6%20-34.4,-58.6%20-34.8))')&\$top=20"</code></pre>
+          <p>La app traduce la respuesta a: <code>{ escenas, porMes, porTipo, resumen }</code>. Para descargar un producto hace falta un token OAuth de Copernicus; el catálogo no lo exige.</p>
+          <p class="enlace"><a href="https://documentation.dataspace.copernicus.eu/APIs.html" target="_blank" rel="noopener">documentation.dataspace.copernicus.eu/APIs.html</a></p>
+          <p class="enlace"><a href="https://nisar-docs.asf.alaska.edu" target="_blank" rel="noopener">nisar-docs.asf.alaska.edu</a></p>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Qué más se puede pedir</h2>
+          <ul>
+            <li><b>Sentinel-1 SLC:</b> interferometría real; requiere descarga y procesamiento pesado.</li>
+            <li><b>NISAR L-band:</b> mayor penetración en vegetación y mejor coherencia en cultivos.</li>
+            <li><b>Sentinel-2:</b> validar el cambio óptico y clasificar cobertura.</li>
+            <li><b>Copernicus DEM:</b> corregir deformación topográfica y calcular pendientes.</li>
+            <li><b>SAOCOM (CONAE):</b> L-band regional; descarga con licencia y registro.</li>
+          </ul>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Alcance y reglas</h2>
+          <p><b>Licencia:</b> datos Copernicus gratuitos y abiertos; atribución a ESA/Copernicus. El código de la app es Apache 2.0.</p>
+          <p><b>No usar:</b> imágenes comerciales de alta resolución, COSMO-SkyMed/PAZ/SAOCOM fuera de su licencia, ni telemetría.</p>
+          <p><b>Límite técnico:</b> el catálogo no dice si dos escenas son coherentes; la separación temporal y la órbita son un proxy, no una garantía.</p>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Cómo mejorar para otros servicios</h2>
+          <div class="pasos">
+            <div class="paso"><p>Agregar autenticación OAuth y descarga directa de SLC para generar pares.</p></div>
+            <div class="paso"><p>Integrar openEO o MintPy como servicio de procesamiento y devolver un GeoTIFF de deformación.</p></div>
+            <div class="paso"><p>Conectar alertas a WhatsApp/SMS y a un visor municipal con capas de vulnerabilidad.</p></div>
+            <div class="paso"><p>Versionar el catálogo en PostGIS y exponer una API propia para otras apps.</p></div>
+          </div>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Fuentes citadas</h2>
+          <ul>
+            <li>ESA Copernicus Data Space — documentación de APIs.</li>
+            <li>NASA ASF — NISAR data documentation.</li>
+            <li>CONAE — catálogo SAOCOM y geoservicios OGC.</li>
+            <li>Reglas Space Apps 2026 — legal y licencias.</li>
+          </ul>
+          <p class="aviso">Si una fuente no responde, la app muestra <code>data/respaldo/radar.json</code> y lo declara en el chip de estado.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pie"><div class="wrap"><span>Radar de Cambios · demo con datos abiertos</span><span>Sentinel-1 © ESA/Copernicus · NISAR © NASA/ISRO</span></div></footer>
+
+  <script src="/js/theme.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

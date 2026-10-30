@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="es" data-theme="oscuro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Space Apps 10 · Diez apps con datos abiertos</title>
+  <meta name="description" content="Diez aplicaciones de observación de la Tierra, clima espacial y exploración planetaria con APIs abiertas de NASA, ESA, JAXA, INPE, CONAE y NOAA.">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/panel.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-in">
+      <a class="marca" href="/">
+        <span class="marca-simbolo" aria-hidden="true">✦</span>
+        <span>Space Apps 10<small>NASA SPACE APPS CHALLENGE 2026</small></span>
+      </a>
+      <span class="espacio"></span>
+      <span class="chip vivo" id="estado-api">verificando APIs</span>
+      <button class="tema" data-tema-boton aria-label="Cambiar tema"><span class="tema-icono">☀</span></button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero wrap">
+      <div class="hero-copiar">
+        <p class="eyebrow">10 aplicaciones · 17 agencias · datos abiertos</p>
+        <h1 class="titulo">Del dato satelital a una<br><em>decisión que se entiende.</em></h1>
+        <p class="bajada">
+          Diez demos funcionales con HTML, CSS, JavaScript y Express. Cada una tiene dos solapas:
+          <strong>datos y solución</strong> (lo que entrega la API, el modelo de negocio y la propuesta)
+          y <strong>documentación</strong> (cómo se usa, qué más se puede pedir, alcance y mejoras).
+        </p>
+        <div class="acciones">
+          <a class="boton" href="#apps">Explorar las 10 apps</a>
+          <a class="boton secundario" href="/api/salud">Estado del servidor</a>
+        </div>
+      </div>
+      <aside class="hero-panel">
+        <div class="orbit" aria-hidden="true">
+          <span class="orbita o1"></span>
+          <span class="orbita o2"></span>
+          <span class="orbita o3"></span>
+          <span class="satelite s1"></span>
+          <span class="satelite s2"></span>
+          <span class="satelite s3"></span>
+          <span class="tierra"></span>
+        </div>
+        <div class="hero-datos">
+          <div><span class="metric" id="stat-apps">10</span><small>apps</small></div>
+          <div><span class="metric" id="stat-apis">14</span><small>APIs</small></div>
+          <div><span class="metric">2</span><small>solapas</small></div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="wrap controles" id="apps">
+      <div class="filtros" role="group" aria-label="Filtrar aplicaciones">
+        <button class="filtro activo" data-filtro="todas">Todas</button>
+        <button class="filtro" data-filtro="tierra">Tierra</button>
+        <button class="filtro" data-filtro="clima">Clima y riesgo</button>
+        <button class="filtro" data-filtro="espacio">Espacio profundo</button>
+      </div>
+      <p class="nota-filtro" id="nota-filtro">10 aplicaciones · datos en vivo con respaldo automático</p>
+    </section>
+
+    <section class="wrap grid-apps" id="grid-apps" aria-live="polite"></section>
+
+    <section class="wrap metodo">
+      <div class="tarjeta">
+        <span class="kicker">Cómo leer esta entrega</span>
+        <h2>Datos vivos, supuestos explícitos y fuentes citadas</h2>
+        <div class="grid grid-3 metodo-grid">
+          <div>
+            <h3>1 · Proxy con caché</h3>
+            <p>Cada app consulta al servidor Express, que normaliza la API, cachea y evita CORS. Las claves opcionales viven en <code>.env</code>, nunca en el repositorio.</p>
+          </div>
+          <div>
+            <h3>2 · Respaldo declarado</h3>
+            <p>Si una API pide registro o se cae, la interfaz muestra el subset de <code>data/respaldo/</code> y lo indica en pantalla. La demo nunca queda vacía.</p>
+          </div>
+          <div>
+            <h3>3 · Modelo y límites</h3>
+            <p>Cada solapa 1 explica el problema, el usuario y la sostenibilidad. Cada solapa 2 declara licencias, límites y qué se puede construir después.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pie">
+    <div class="wrap">
+      <span>Space Apps 10 · demo educativa · código Apache 2.0</span>
+      <span>Fuentes: NASA, ESA/Copernicus, JAXA, INPE, CONAE, IGN, NOAA, ISRIC, CelesTrak</span>
+    </div>
+  </footer>
+
+  <script src="/js/theme.js"></script>
+  <script src="/js/panel.js"></script>
+</body>
+</html>

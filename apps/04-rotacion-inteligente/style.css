@@ -1,0 +1,38 @@
+:root { --accent: #a3e635; --accent-2: #4ade80; }
+
+/* Pestañas segmentadas tipo consola agrícola */
+.tabs { gap: 0; border: 1px solid var(--linea); border-radius: 10px; padding: 4px; width: fit-content; max-width: 100%; background: var(--panel); }
+.tab { border-radius: 7px; padding: 9px 15px; }
+.tab.activo { background: var(--accent); color: #0d1a05; box-shadow: 0 0 18px rgba(163, 230, 53, .25); }
+html[data-theme="claro"] .tab.activo { color: #fff; }
+
+.fila-titulo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.fila-titulo h2 { margin: 0; }
+
+.presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.preset { border: 1px solid var(--linea); background: var(--panel-2); color: var(--muted); font: inherit; font-size: 11px; padding: 6px 9px; border-radius: 6px; cursor: pointer; }
+.preset:hover { color: var(--accent); border-color: var(--accent); }
+.nota { font-size: 11.5px; color: var(--suave); margin: 10px 0 0; }
+
+#suelo-cards .mini { border: 1px solid var(--linea); border-radius: 10px; padding: 12px; background: var(--panel-2); }
+#suelo-cards .mini span { display: block; font-family: var(--mono); font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+#suelo-cards .mini b { display: block; font-family: var(--mono); font-size: 21px; margin-top: 4px; }
+#suelo-cards .mini small { color: var(--suave); font-size: 10px; }
+
+.rot-card { border: 1px solid var(--linea); border-radius: 12px; padding: 16px; background: var(--panel); position: relative; overflow: hidden; }
+.rot-card.destacada { border-color: color-mix(in srgb, var(--accent) 60%, var(--linea)); box-shadow: 0 0 30px rgba(163, 230, 53, .10); }
+.rot-card .cab { display: flex; align-items: start; justify-content: space-between; gap: 10px; }
+.rot-card h3 { margin: 0; font-size: 16px; }
+.rot-card .score { font-family: var(--mono); font-size: 26px; font-weight: 700; color: var(--accent); }
+.rot-card p { margin: 6px 0 10px; }
+.rot-card .barra { height: 6px; border-radius: 99px; background: var(--panel-2); overflow: hidden; }
+.rot-card .barra i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent-2), var(--accent)); border-radius: 99px; }
+.rot-card .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+.rot-card .tags span { font-family: var(--mono); font-size: 9.5px; padding: 3px 6px; border: 1px solid var(--linea); border-radius: 5px; color: var(--muted); }
+.rot-card .detalle { font-size: 11.5px; color: var(--suave); margin-top: 8px; }
+
+.lista { margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: 13px; }
+.lista li { margin-bottom: 7px; }
+.lista b { color: var(--texto); }
+
+#chart-clima .nota { font-size: 11.5px; color: var(--suave); margin-top: 6px; }

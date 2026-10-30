@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="es" data-theme="oscuro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>03 · Detective de Tendencias — Space Apps 10</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-in">
+      <a class="marca" href="/"><span class="marca-simbolo">✦</span><span>Space Apps 10<small>DETECTIVE DE TENDENCIAS</small></span></a>
+      <span class="espacio"></span>
+      <a class="volver" href="/">← Panel</a>
+      <button class="tema" data-tema-boton aria-label="Cambiar tema"><span class="tema-icono">☀</span></button>
+    </div>
+  </header>
+
+  <div class="wrap app-head">
+    <p class="eyebrow">App 03 · Clima · Series temporales</p>
+    <h1 class="titulo">Detective de Tendencias</h1>
+    <p class="bajada">¿La lluvia de tu región sube, baja o no se mueve? Test de Mann-Kendall y pendiente de Sen sobre datos mensuales de NASA POWER, con mapa local de significancia.</p>
+    <div class="chips">
+      <span class="chip vivo" id="chip-fuente">consultando</span>
+      <span class="chip"><b>NASA</b> POWER</span>
+      <span class="chip"><b>ESA</b> CCI</span>
+      <span class="chip"><b>JAXA</b> GSMaP</span>
+      <span class="chip">Reto: Climate trends</span>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="tabs" role="tablist" aria-label="Secciones de la app">
+      <button class="tab activo" data-tab="datos" role="tab" aria-selected="true">01 · Datos y solución</button>
+      <button class="tab" data-tab="docs" role="tab" aria-selected="false">02 · Documentación</button>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <section class="panel activo" data-panel="datos">
+      <div class="grid grid-4" style="margin-top:18px">
+        <div class="tarjeta"><span class="kicker">Tendencia de lluvia</span><div class="metric" id="m-pend">—</div><span class="delta" id="m-pend-sub">mm por década</span></div>
+        <div class="tarjeta"><span class="kicker">Tau de Kendall</span><div class="metric" id="m-tau">—</div><span class="delta">-1 a +1</span></div>
+        <div class="tarjeta"><span class="kicker">p-valor</span><div class="metric" id="m-p">—</div><span class="delta" id="m-p-sub">—</span></div>
+        <div class="tarjeta"><span class="kicker">Tendencia de temperatura</span><div class="metric" id="m-temp">—</div><span class="delta">°C por década</span></div>
+      </div>
+
+      <div class="grid grid-2-1" style="margin-top:16px">
+        <div class="tarjeta">
+          <h2>Precipitación anual</h2>
+          <p>Barras: total anual (mm). Línea: media del período. La tendencia se calcula sobre los valores anuales, no sobre el acumulado.</p>
+          <div id="chart-precip"></div>
+          <div class="leyenda"><span><i style="background:#35d39a"></i> precipitación anual</span><span><i style="background:#8d9ab1"></i> media</span></div>
+        </div>
+        <div class="tarjeta">
+          <span class="kicker">Controles</span>
+          <h2>Punto y período</h2>
+          <div class="grid" style="gap:10px;margin-top:8px">
+            <label class="campo">Latitud<input id="lat" type="number" step="0.01" value="-34.60"></label>
+            <label class="campo">Longitud<input id="lon" type="number" step="0.01" value="-58.40"></label>
+            <div class="grid grid-2" style="gap:8px">
+              <label class="campo">Desde<input id="desde" type="number" min="1981" max="2025" value="2015"></label>
+              <label class="campo">Hasta<input id="hasta" type="number" min="1982" max="2026" value="2025"></label>
+            </div>
+            <button class="boton" id="btn-consultar">Recalcular</button>
+          </div>
+          <div class="presets">
+            <button class="preset" data-lat="-34.60" data-lon="-58.40">Pampa</button>
+            <button class="preset" data-lat="-24.78" data-lon="-65.42">Salta</button>
+            <button class="preset" data-lat="-45.90" data-lon="-67.50">Patagonia</button>
+            <button class="preset" data-lat="-27.80" data-lon="-64.20">Chaco</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="margin-top:16px">
+        <div class="tarjeta">
+          <h2>Temperatura media anual</h2>
+          <div id="chart-temp"></div>
+        </div>
+        <div class="tarjeta">
+          <h2>Mapa de significancia (3×3)</h2>
+          <p>Nueve puntos alrededor del centro. Verde = tendencia húmeda significativa; rojo = seca significativa; gris = sin evidencia.</p>
+          <div class="matriz" id="matriz"><div class="aviso">Pulsá “Calcular mapa” para consultar 9 puntos.</div></div>
+          <button class="boton secundario" id="btn-matriz" style="margin-top:10px">Calcular mapa</button>
+        </div>
+      </div>
+
+      <div class="tarjeta" style="margin-top:16px">
+        <h2>Interpretación automática</h2>
+        <div id="interpretacion" class="interpretacion"><p class="aviso">Esperando datos…</p></div>
+      </div>
+
+      <div class="grid grid-2" style="margin-top:16px">
+        <div class="tarjeta">
+          <span class="kicker">Modelo de negocio</span>
+          <h2>Información climática con rigor</h2>
+          <ul class="lista">
+            <li><b>Usuario:</b> cooperativas, municipios, aseguradoras y productores que planifican a 10 años.</li>
+            <li><b>Problema:</b> ver “sequía” o “más lluvia” sin test estadístico lleva a decisiones caras.</li>
+            <li><b>Ingreso:</b> informes por región + API para integrar en crédito o seguros.</li>
+            <li><b>Valor:</b> declara incertidumbre (p-valor) y no vende una tendencia que no es significativa.</li>
+          </ul>
+        </div>
+        <div class="tarjeta">
+          <span class="kicker">Solución probable</span>
+          <h2>Estadística antes que narrativa</h2>
+          <div class="pasos">
+            <div class="paso"><p>Descargar la serie mensual y agregar a anual.</p></div>
+            <div class="paso"><p>Calcular Mann-Kendall (S, tau, p) y pendiente de Sen.</p></div>
+            <div class="paso"><p>Repetir en una grilla para ver si la señal es local o regional.</p></div>
+          </div>
+          <p class="aviso" style="margin-top:10px">Mann-Kendall detecta monotonía, no causalidad. La app lo dice explícitamente.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" data-panel="docs" hidden>
+      <div class="doc grid" style="margin-top:18px">
+        <div class="tarjeta">
+          <h2>APIs de la app</h2>
+          <table>
+            <thead><tr><th>Fuente</th><th>Dato</th><th>Auth</th><th>Resolución</th></tr></thead>
+            <tbody>
+              <tr><td>NASA POWER</td><td>Precipitación y temperatura mensual</td><td>Abierta</td><td>~0,5°</td></tr>
+              <tr><td>NASA GES DISC</td><td>Series climáticas (IMERG, MERRA-2)</td><td>Earthdata</td><td>0,1° / 0,5°</td></tr>
+              <tr><td>ESA CCI</td><td>Variables climáticas esenciales</td><td>Abierta</td><td>0,25°–1°</td></tr>
+              <tr><td>JAXA GSMaP</td><td>Lluvia satelital global</td><td>Abierta (STAC)</td><td>0,1°</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="tarjeta">
+          <h2>Cómo se calcula</h2>
+          <pre><code>S = Σ sign(xj − xi)  para j &gt; i
+Var(S) = n(n−1)(2n+5)/18
+Z = (S ∓ 1) / √Var(S)
+p = 2 · (1 − Φ(|Z|))
+tau = S / (n(n−1)/2)
+Sen = mediana( (xj − xi) / (j − i) )</code></pre>
+          <p>La pendiente de Sen se multiplica por 10 para expresar mm/década. El p-valor usa la aproximación normal, válida para n ≥ 8.</p>
+          <p class="enlace"><a href="https://power.larc.nasa.gov/docs/services/api/" target="_blank" rel="noopener">power.larc.nasa.gov/docs/services/api/</a></p>
+          <p class="enlace"><a href="https://www.esa.int/Applications/Observing_the_Earth/Climate_Change_Initiative" target="_blank" rel="noopener">esa.int · Climate Change Initiative</a></p>
+        </div>
+        <div class="tarjeta">
+          <h2>Qué más se puede pedir</h2>
+          <ul>
+            <li><b>IMERG (GES DISC):</b> lluvia cada 30 min y 0,1°; ideal para eventos extremos.</li>
+            <li><b>MERRA-2:</b> viento, humedad, radiación y temperatura con consistencia física.</li>
+            <li><b>ESA CCI Soil Moisture:</b> humedad de suelo de 40 años.</li>
+            <li><b>GSMaP:</b> lluvia global con cobertura casi horaria.</li>
+            <li><b>CHIRPS:</b> lluvia diaria 0,05° para validar.</li>
+          </ul>
+        </div>
+        <div class="tarjeta">
+          <h2>Alcance y advertencias</h2>
+          <p><b>Resolución:</b> POWER representa celdas de ~50 km, no un lote. No sirve para decisiones prediales.</p>
+          <p><b>Estadística:</b> con 10-11 años, la potencia del test es baja; un p &gt; 0,05 no prueba ausencia de tendencia.</p>
+          <p><b>Datos:</b> POWER es un reanálisis/modelo, no una estación. Para ingeniería, validar con observaciones locales.</p>
+        </div>
+        <div class="tarjeta">
+          <h2>Cómo mejorar para otros servicios</h2>
+          <div class="pasos">
+            <div class="paso"><p>Agregar estacionalidad (Mann-Kendall estacional) y análisis de extremos (GEV).</p></div>
+            <div class="paso"><p>Permitir subir una serie propia (CSV) y compararla con la API.</p></div>
+            <div class="paso"><p>Exponer el cálculo como API para informes de crédito y seguros.</p></div>
+            <div class="paso"><p>Versionar resultados y citar la fecha de descarga.</p></div>
+          </div>
+        </div>
+        <div class="tarjeta">
+          <h2>Fuentes citadas</h2>
+          <ul>
+            <li>NASA POWER — API temporal monthly/climatology.</li>
+            <li>NASA GES DISC — IMERG y MERRA-2.</li>
+            <li>ESA CCI — Climate Change Initiative datasets.</li>
+            <li>JAXA — GSMaP STAC/COG.</li>
+            <li>Mann (1945), Kendall (1975), Sen (1968).</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pie"><div class="wrap"><span>Detective de Tendencias · Mann-Kendall + Sen</span><span>NASA POWER · ESA CCI · JAXA GSMaP</span></div></footer>
+
+  <script src="/js/theme.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

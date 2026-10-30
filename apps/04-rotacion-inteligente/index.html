@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="es" data-theme="oscuro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>04 · Rotación Inteligente — Space Apps 10</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-in">
+      <a class="marca" href="/"><span class="marca-simbolo">✦</span><span>Space Apps 10<small>ROTACIÓN INTELIGENTE</small></span></a>
+      <span class="espacio"></span>
+      <a class="volver" href="/">← Panel</a>
+      <button class="tema" data-tema-boton aria-label="Cambiar tema"><span class="tema-icono">☀</span></button>
+    </div>
+  </header>
+
+  <div class="wrap app-head">
+    <p class="eyebrow">App 04 · Agricultura · Suelo y clima</p>
+    <h1 class="titulo">Rotación Inteligente</h1>
+    <p class="bajada">Cruza clima histórico (NASA POWER) con propiedades de suelo (SoilGrids) y propone rotaciones de cultivo con supuestos editables de agua, mercado y riesgo. Nada de “la mejor rotación” sin decir bajo qué supuestos.</p>
+    <div class="chips">
+      <span class="chip vivo" id="chip-fuente">consultando</span>
+      <span class="chip"><b>NASA</b> POWER</span>
+      <span class="chip"><b>ISRIC</b> SoilGrids</span>
+      <span class="chip"><b>ESA</b> Sentinel-2</span>
+      <span class="chip">Reto: Agriculture</span>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="tabs" role="tablist" aria-label="Secciones de la app">
+      <button class="tab activo" data-tab="datos" role="tab" aria-selected="true">01 · Datos y solución</button>
+      <button class="tab" data-tab="docs" role="tab" aria-selected="false">02 · Documentación</button>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <section class="panel activo" data-panel="datos">
+      <div class="grid grid-4" style="margin-top:18px">
+        <div class="tarjeta"><span class="kicker">Lluvia anual</span><div class="metric" id="m-lluvia">—</div><span class="delta">climatología POWER</span></div>
+        <div class="tarjeta"><span class="kicker">Textura</span><div class="metric" id="m-textura" style="font-size:24px">—</div><span class="delta" id="m-textura-sub">SoilGrids 0–5 cm</span></div>
+        <div class="tarjeta"><span class="kicker">Arcilla</span><div class="metric" id="m-arcilla">—</div><span class="delta">% del suelo</span></div>
+        <div class="tarjeta"><span class="kicker">Retención de agua</span><div class="metric" id="m-retencion">—</div><span class="delta">índice 0–45</span></div>
+      </div>
+
+      <div class="grid grid-2-1" style="margin-top:16px">
+        <div class="tarjeta">
+          <h2>Clima y suelo del punto</h2>
+          <p>Barras: lluvia mensual climatológica (mm). Línea: temperatura media (°C).</p>
+          <div id="chart-clima"></div>
+        </div>
+        <div class="tarjeta">
+          <span class="kicker">Consulta</span>
+          <h2>Elegí el lote</h2>
+          <div class="grid" style="gap:10px;margin-top:8px">
+            <label class="campo">Latitud<input id="lat" type="number" step="0.01" value="-27.80"></label>
+            <label class="campo">Longitud<input id="lon" type="number" step="0.01" value="-64.20"></label>
+            <button class="boton" id="btn-consultar">Actualizar clima y suelo</button>
+          </div>
+          <div class="presets">
+            <button class="preset" data-lat="-27.80" data-lon="-64.20">Santiago del Estero</button>
+            <button class="preset" data-lat="-34.60" data-lon="-58.40">Pampa</button>
+            <button class="preset" data-lat="-24.78" data-lon="-65.42">Salta</button>
+            <button class="preset" data-lat="-31.40" data-lon="-64.20">Córdoba</button>
+          </div>
+          <p class="nota">SoilGrids es un mapa global de 250 m; no reemplaza un análisis de suelo. POWER representa celdas de ~50 km.</p>
+        </div>
+      </div>
+
+      <div class="tarjeta" style="margin-top:16px">
+        <div class="fila-titulo"><h2>Perfil de suelo</h2><span class="badge" id="badge-suelo">—</span></div>
+        <div class="grid grid-4" id="suelo-cards"></div>
+        <p class="aviso" id="nota-suelo" style="margin-top:12px"></p>
+      </div>
+
+      <div class="tarjeta" style="margin-top:16px">
+        <span class="kicker">Recomendador</span>
+        <h2>Supuestos editables</h2>
+        <div class="grid grid-3" style="margin-top:8px">
+          <label class="campo">Agua disponible <b id="v-agua">60</b>/100
+            <input id="agua" type="range" min="0" max="100" value="60">
+          </label>
+          <label class="campo">Precio de mercado <b id="v-precio">60</b>/100
+            <input id="precio" type="range" min="0" max="100" value="60">
+          </label>
+          <label class="campo">Tolerancia al riesgo <b id="v-riesgo">50</b>/100
+            <input id="riesgo" type="range" min="0" max="100" value="50">
+          </label>
+        </div>
+        <div class="grid grid-2" style="margin-top:12px">
+          <label class="campo">Objetivo
+            <select id="objetivo">
+              <option value="equilibrio">Equilibrio renta–suelo</option>
+              <option value="renta">Maximizar renta</option>
+              <option value="suelo">Cuidar el suelo</option>
+              <option value="agua">Ahorrar agua</option>
+            </select>
+          </label>
+          <div class="acciones"><button class="boton secundario" id="btn-explicar">Ver fórmula del score</button></div>
+        </div>
+        <div id="explicacion" class="aviso" hidden style="margin-top:10px"></div>
+      </div>
+
+      <div class="grid grid-2" style="margin-top:16px" id="ranking"></div>
+
+      <div class="grid grid-2" style="margin-top:16px">
+        <div class="tarjeta">
+          <span class="kicker">Modelo de negocio</span>
+          <h2>Agtech para cooperativas</h2>
+          <ul class="lista">
+            <li><b>Usuario:</b> cooperativas, agrónomos y aseguradoras agropecuarias.</li>
+            <li><b>Problema:</b> la rotación se decide por costumbre o precio del año, no por suelo y agua.</li>
+            <li><b>Ingreso:</b> suscripción por establecimiento + informes de carbono/suelo.</li>
+            <li><b>Valor:</b> supuestos explícitos y trazabilidad de fuentes; auditable para crédito.</li>
+          </ul>
+        </div>
+        <div class="tarjeta">
+          <span class="kicker">Solución probable</span>
+          <h2>Un recomendador que se deja discutir</h2>
+          <div class="pasos">
+            <div class="paso"><p>Calcular agua y temperatura esperadas por mes en el lote.</p></div>
+            <div class="paso"><p>Estimar textura, pH y materia orgánica del suelo.</p></div>
+            <div class="paso"><p>Puntuar rotaciones con pesos que el usuario puede mover.</p></div>
+            <div class="paso"><p>Mostrar el ranking y la fórmula, no una caja negra.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" data-panel="docs" hidden>
+      <div class="doc grid" style="margin-top:18px">
+        <div class="tarjeta">
+          <h2>APIs de la app</h2>
+          <table>
+            <thead><tr><th>Fuente</th><th>Dato</th><th>Auth</th><th>Escala</th></tr></thead>
+            <tbody>
+              <tr><td>NASA POWER</td><td>Climatología mensual</td><td>Abierta</td><td>~50 km</td></tr>
+              <tr><td>ISRIC SoilGrids</td><td>Arcilla, arena, pH, SOC, N</td><td>Abierta</td><td>250 m</td></tr>
+              <tr><td>NASA SMAP</td><td>Humedad de suelo</td><td>Earthdata</td><td>9–36 km</td></tr>
+              <tr><td>ESA Sentinel-2</td><td>NDVI, cobertura, riego</td><td>Abierta</td><td>10 m</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="tarjeta">
+          <h2>Cómo se usa</h2>
+          <pre><code>GET https://power.larc.nasa.gov/api/temporal/
+  climatology/point?parameters=PRECTOTCORR,T2M
+  &amp;community=AG&amp;latitude=-27.8&amp;longitude=-64.2
+
+GET https://rest.isric.org/soilgrids/v2.0/
+  properties/query?lon=-64.2&amp;lat=-27.8
+  &amp;property=clay&amp;depth=0-5cm&amp;value=mean</code></pre>
+          <p>El servidor convierte mm/día a mm/mes y g/kg a %. Si SoilGrids no tiene dato en el punto exacto, prueba una celda vecina y lo declara.</p>
+          <p class="enlace"><a href="https://power.larc.nasa.gov/docs/services/api/" target="_blank" rel="noopener">power.larc.nasa.gov/docs/services/api/</a></p>
+          <p class="enlace"><a href="https://soilgrids.org" target="_blank" rel="noopener">soilgrids.org</a></p>
+        </div>
+        <div class="tarjeta">
+          <h2>Qué más se puede pedir</h2>
+          <ul>
+            <li><b>SMAP:</b> humedad real del suelo para ajustar el riego.</li>
+            <li><b>Sentinel-2:</b> NDVI y fenología para validar rotaciones.</li>
+            <li><b>Sentinel-1:</b> humedad y estructura del cultivo con radar.</li>
+            <li><b>Precios:</b> bolsas locales o FAOSTAT para el supuesto de mercado.</li>
+            <li><b>Carbono:</b> modelos de SOC para créditos de carbono.</li>
+          </ul>
+        </div>
+        <div class="tarjeta">
+          <h2>Alcance y advertencias</h2>
+          <p><b>No es una recomendación agronómica:</b> es un ejercicio de trade-offs con datos globales. Un agrónomo debe validar.</p>
+          <p><b>Resolución:</b> POWER y SoilGrids no capturan un lote; la decisión requiere muestreo.</p>
+          <p><b>Licencias:</b> POWER y SoilGrids abiertos con atribución; Sentinel-2 Copernicus.</p>
+        </div>
+        <div class="tarjeta">
+          <h2>Cómo mejorar para otros servicios</h2>
+          <div class="paso"><p>Agregar un modelo de balance hídrico y rendimiento por cultivo.</p></div>
+          <div class="paso"><p>Permitir importar análisis de suelo del establecimiento.</p></div>
+          <div class="paso"><p>Conectar precios de mercado y costos de insumos.</p></div>
+          <div class="paso"><p>Versionar recomendaciones y medir resultados en la campaña siguiente.</p></div>
+        </div>
+        <div class="tarjeta">
+          <h2>Fuentes citadas</h2>
+          <ul>
+            <li>NASA POWER — climatology/point.</li>
+            <li>ISRIC — SoilGrids 2.0.</li>
+            <li>NASA SMAP — soil moisture.</li>
+            <li>ESA Copernicus — Sentinel-2.</li>
+            <li>FAO — rotaciones y manejo de suelos.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pie"><div class="wrap"><span>Rotación Inteligente · supuestos editables</span><span>NASA POWER · ISRIC SoilGrids · ESA</span></div></footer>
+
+  <script src="/js/theme.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

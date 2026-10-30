@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="es" data-theme="oscuro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>02 · Calendario del Fuego — Space Apps 10</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-in">
+      <a class="marca" href="/"><span class="marca-simbolo">✦</span><span>Space Apps 10<small>CALENDARIO DEL FUEGO</small></span></a>
+      <span class="espacio"></span>
+      <a class="volver" href="/">← Panel</a>
+      <button class="tema" data-tema-boton aria-label="Cambiar tema"><span class="tema-icono">☀</span></button>
+    </div>
+  </header>
+
+  <div class="wrap app-head">
+    <p class="eyebrow">App 02 · Riesgo climático · Focos de calor</p>
+    <h1 class="titulo">Calendario del Fuego</h1>
+    <p class="bajada">Focos de calor diarios de INPE para Sudamérica, filtrados por país y armonizados por satélite. El calendario muestra qué días se salen del promedio y la tabla prioriza los focos por energía radiativa (FRP).</p>
+    <div class="chips">
+      <span class="chip vivo" id="chip-fuente">consultando</span>
+      <span class="chip"><b>INPE</b> Queimadas</span>
+      <span class="chip"><b>NASA</b> FIRMS</span>
+      <span class="chip"><b>CONAE</b> GOES</span>
+      <span class="chip">Reto: Fire / Climate</span>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="tabs" role="tablist" aria-label="Secciones de la app">
+      <button class="tab activo" data-tab="datos" role="tab" aria-selected="true">01 · Datos y solución</button>
+      <button class="tab" data-tab="docs" role="tab" aria-selected="false">02 · Documentación</button>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <section class="panel activo" data-panel="datos">
+      <div class="grid grid-4" style="margin-top:18px">
+        <div class="tarjeta"><span class="kicker">Focos detectados</span><div class="metric" id="m-total">—</div><span class="delta" id="m-total-sub">—</span></div>
+        <div class="tarjeta"><span class="kicker">FRP máximo</span><div class="metric" id="m-frp">—</div><span class="delta">MW por foco</span></div>
+        <div class="tarjeta"><span class="kicker">Provincias</span><div class="metric" id="m-prov">—</div><span class="delta">con al menos un foco</span></div>
+        <div class="tarjeta"><span class="kicker">Satélites</span><div class="metric" id="m-sat">—</div><span class="delta">sensores que aportaron</span></div>
+      </div>
+
+      <div class="tarjeta" style="margin-top:16px">
+        <div class="fila-titulo">
+          <h2>Focos sobre el territorio</h2>
+          <div class="controles-fuego">
+            <label class="campo">País<select id="pais"></select></label>
+            <label class="campo">Días<select id="dias"><option value="1">1</option><option value="3" selected>3</option><option value="7">7</option></select></label>
+            <button class="boton" id="btn-actualizar">Actualizar</button>
+          </div>
+        </div>
+        <div id="mapa" class="mapa" role="img" aria-label="Mapa de focos de calor"></div>
+        <p class="nota">Tamaño del círculo = FRP; color = riesgo de fuego reportado. La primera carga de 7 días puede tardar: descarga y parsea ~26 MB de CSV abiertos.</p>
+      </div>
+
+      <div class="grid grid-2-1" style="margin-top:16px">
+        <div class="tarjeta">
+          <h2>Calendario de anomalías</h2>
+          <p>Cada celda es un día con datos. El color compara el conteo diario contra el promedio del período seleccionado.</p>
+          <div class="calendario" id="calendario"></div>
+          <div class="leyenda">
+            <span><i style="background:#2fbf71"></i> bajo</span>
+            <span><i style="background:#f5b301"></i> normal</span>
+            <span><i style="background:#f07a24"></i> alto</span>
+            <span><i style="background:#e5484d"></i> muy alto</span>
+          </div>
+        </div>
+        <div class="tarjeta">
+          <h2>Lectura rápida</h2>
+          <div id="lectura" class="lectura"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="margin-top:16px">
+        <div class="tarjeta"><h2>Focos por satélite</h2><p>Qué sensor aporta cada detección; mezclar MODIS y VIIRS cambia la sensibilidad.</p><div id="chart-sat"></div></div>
+        <div class="tarjeta"><h2>Focos por provincia</h2><p>Ranking del período. No es área quemada: es conteo de detecciones.</p><div id="chart-prov"></div></div>
+      </div>
+
+      <div class="tarjeta" style="margin-top:16px">
+        <div class="fila-titulo"><h2>Focos prioritarios</h2><button class="boton secundario" id="btn-json">Descargar JSON</button></div>
+        <div class="tabla-wrap" style="max-height:360px">
+          <table>
+            <thead><tr><th>Fecha</th><th>Provincia</th><th>Municipio</th><th>Satélite</th><th class="num">FRP</th><th class="num">Riesgo</th><th class="num">Días s/ lluvia</th><th>Coord.</th></tr></thead>
+            <tbody id="tabla"><tr><td colspan="8">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="margin-top:16px">
+        <div class="tarjeta">
+          <span class="kicker">Modelo de negocio</span>
+          <h2>Seguros, bomberos y municipios</h2>
+          <ul class="lista">
+            <li><b>Problema:</b> los focos se publican cada 10 minutos, pero no se convierten en prioridad operativa.</li>
+            <li><b>Usuario:</b> defensa civil, bomberos voluntarios, aseguradoras agropecuarias.</li>
+            <li><b>Ingreso:</b> suscripción por provincia + API para integrar en sistemas de emergencia.</li>
+            <li><b>Valor:</b> prioriza por FRP y proximidad a población/infraestructura, no solo por conteo.</li>
+          </ul>
+        </div>
+        <div class="tarjeta">
+          <span class="kicker">Solución probable</span>
+          <h2>Armonizar antes de comparar</h2>
+          <div class="pasos">
+            <div class="paso"><p>Normalizar satélites y horarios (MODIS, VIIRS, GOES) para evitar doble conteo.</p></div>
+            <div class="paso"><p>Calcular anomalía diaria/semanal y marcar picos contra la climatología.</p></div>
+            <div class="paso"><p>Cruzar con viento, humedad y cobertura vegetal para estimar propagación.</p></div>
+          </div>
+          <p class="aviso" style="margin-top:10px">Esta demo resuelve el filtrado y la anomalía; la propagación queda como siguiente etapa.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" data-panel="docs" hidden>
+      <div class="doc grid" style="margin-top:18px">
+        <div class="tarjeta">
+          <h2>APIs de la app</h2>
+          <table>
+            <thead><tr><th>Fuente</th><th>Dato</th><th>Auth</th><th>Formato</th></tr></thead>
+            <tbody>
+              <tr><td>INPE Queimadas</td><td>Focos diarios Sudamérica</td><td>Abierta</td><td>CSV / KML</td></tr>
+              <tr><td>INPE BDQueimadas</td><td>Riesgo de fuego, área quemada</td><td>Abierta</td><td>GeoTIFF / SHP</td></tr>
+              <tr><td>NASA FIRMS</td><td>MODIS/VIIRS global</td><td>MAP_KEY gratis</td><td>CSV / API</td></tr>
+              <tr><td>CONAE</td><td>Focos GOES, emergencias</td><td>Abierta</td><td>WMS/WFS</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="tarjeta">
+          <h2>Endpoint que usa la demo</h2>
+          <pre><code>GET https://dataserver-coids.inpe.br/queimadas/
+  queimadas/focos/csv/diario/America_Sul/
+  focos_diario_YYYYMMDD.csv</code></pre>
+          <p>El servidor busca el último día disponible con <code>HEAD</code>, descarga el CSV y filtra por <code>pais</code>. Si pedís 3 o 7 días, une varios archivos y agrega por fecha.</p>
+          <p class="enlace"><a href="https://data.inpe.br/queimadas/dados-abertos/" target="_blank" rel="noopener">data.inpe.br/queimadas/dados-abertos/</a></p>
+          <p class="enlace"><a href="https://firms.modaps.eosdis.nasa.gov/api/" target="_blank" rel="noopener">firms.modaps.eosdis.nasa.gov/api/</a></p>
+        </div>
+        <div class="tarjeta">
+          <h2>Qué más se puede pedir</h2>
+          <ul>
+            <li><b>FRP y confianza:</b> los CSV traen <code>frp</code> y <code>risco_fogo</code>; se pueden calibrar umbrales.</li>
+            <li><b>Área quemada:</b> GeoTIFF/SHP de INPE para medir hectáreas, no solo puntos.</li>
+            <li><b>Viento y humedad:</b> POWER u Open-Meteo para estimar propagación.</li>
+            <li><b>Población e infraestructura:</b> capas OSM/IGN para priorizar impacto.</li>
+            <li><b>GOES:</b> focos cada 10 min para detección temprana.</li>
+          </ul>
+        </div>
+        <div class="tarjeta">
+          <h2>Alcance y reglas</h2>
+          <p><b>Licencia:</b> datos abiertos INPE; atribución. FIRMS requiere clave gratuita y sus términos. GOES/CONAE tiene atribución.</p>
+          <p><b>Cuidado:</b> un foco es una detección, no un incendio confirmado. No usar para acusaciones ni para promoción comercial.</p>
+          <p><b>Límite:</b> la anomalía es contra el promedio del período cargado, no contra una climatología de 20 años.</p>
+        </div>
+        <div class="tarjeta">
+          <h2>Cómo mejorar para otros servicios</h2>
+          <div class="pasos">
+            <div class="paso"><p>Construir una climatología por provincia con 10-20 años de FIRMS/INPE.</p></div>
+            <div class="paso"><p>Deduplicar focos entre satélites con ventana espacial y temporal.</p></div>
+            <div class="paso"><p>Integrar un modelo de propagación y alertas push por WhatsApp/SMS.</p></div>
+            <div class="paso"><p>Exponer una API de priorización para bomberos y municipios.</p></div>
+          </div>
+        </div>
+        <div class="tarjeta">
+          <h2>Fuentes citadas</h2>
+          <ul>
+            <li>INPE — Programa Queimadas, datos abiertos.</li>
+            <li>NASA FIRMS — Fire Information for Resource Management System.</li>
+            <li>CONAE — geoservicios y focos GOES.</li>
+            <li>Space Apps 2026 — reglas de licencia y citas.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pie"><div class="wrap"><span>Calendario del Fuego · datos abiertos INPE</span><span>INPE · NASA FIRMS · CONAE</span></div></footer>
+
+  <script src="/js/theme.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
