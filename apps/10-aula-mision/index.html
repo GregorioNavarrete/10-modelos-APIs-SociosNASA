@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="es" data-theme="oscuro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>10 · Aula de Misión — Space Apps 10</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Barra superior compartida. -->
+  <header class="topbar">
+    <div class="topbar-in">
+      <a class="marca" href="/"><span class="marca-simbolo">✦</span><span>Space Apps 10<small>AULA DE MISIÓN</small></span></a>
+      <span class="espacio"></span>
+      <a class="volver" href="/">← Panel</a>
+      <button class="tema" data-tema-boton aria-label="Cambiar tema"><span class="tema-icono">☀</span></button>
+    </div>
+  </header>
+
+  <!-- Cabecera: un juego serio de trade-offs con datos reales de catálogo. -->
+  <div class="wrap app-head">
+    <p class="eyebrow">App 10 · Educación · Diseño de misión</p>
+    <h1 class="titulo">Aula de Misión</h1>
+    <p class="bajada">El catálogo real de objetos activos en órbita y de lanzadores de NASA, ESA, JAXA, ISRO y empresas privadas, convertido en un juego de trade-offs: elegís órbita, masa, presupuesto y pesos, y el ranking explica con números por qué un cohete gana y otro queda fuera por capacidad.</p>
+    <div class="chips">
+      <span class="chip vivo" id="chip-fuente">consultando</span>
+      <span class="chip"><b>CelesTrak</b> SATCAT</span>
+      <span class="chip"><b>NASA</b> / <b>ESA</b></span>
+      <span class="chip"><b>JAXA</b> / <b>ISRO</b></span>
+      <span class="chip">Reto: Mission design</span>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="tabs" role="tablist" aria-label="Secciones de la app">
+      <button class="tab activo" data-tab="datos" role="tab" aria-selected="true">01 · Datos y solución</button>
+      <button class="tab" data-tab="docs" role="tab" aria-selected="false">02 · Documentación</button>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <!-- ================= SOLAPA 1 ================= -->
+    <section class="panel activo" data-panel="datos">
+      <!-- KPIs del catálogo orbital. -->
+      <div class="grid grid-4" style="margin-top:18px">
+        <div class="tarjeta">
+          <span class="kicker">Objetos activos</span>
+          <div class="metric" id="m-total">—</div>
+          <span class="delta">CelesTrak SATCAT</span>
+        </div>
+        <div class="tarjeta">
+          <span class="kicker">Países en el top 10</span>
+          <div class="metric" id="m-paises">—</div>
+          <span class="delta" id="m-paises-sub">por cantidad de objetos</span>
+        </div>
+        <div class="tarjeta">
+          <span class="kicker">Tipos de objeto</span>
+          <div class="metric" id="m-tipos">—</div>
+          <span class="delta">pay loads, cuerpos de cohete, basura</span>
+        </div>
+        <div class="tarjeta">
+          <span class="kicker">Década líder</span>
+          <div class="metric" id="m-decada" style="font-size:26px">—</div>
+          <span class="delta" id="m-decada-sub">lanzamientos registrados</span>
+        </div>
+      </div>
+
+      <!-- Tres lecturas del catálogo: país, tipo y década. -->
+      <div class="grid grid-3" style="margin-top:16px">
+        <div class="tarjeta">
+          <h2>Por país</h2>
+          <p>Top 10 de propietarios de objetos activos.</p>
+          <div id="chart-pais"></div>
+        </div>
+        <div class="tarjeta">
+          <h2>Por tipo</h2>
+          <p>Qué hay arriba: cargas útiles, etapas y desechos.</p>
+          <div id="chart-tipo"></div>
+        </div>
+        <div class="tarjeta">
+          <h2>Por década</h2>
+          <p>Cuándo se lanzaron los objetos que siguen activos.</p>
+          <div id="chart-decada"></div>
+        </div>
+      </div>
+
+      <!-- Juego: parámetros de la misión. -->
+      <div class="tarjeta" style="margin-top:16px">
+        <span class="kicker">Juego de trade-offs</span>
+        <h2>Diseñá tu misión</h2>
+        <div class="grid grid-3" style="margin-top:10px">
+          <label class="campo">Órbita objetivo
+            <select id="orbita">
+              <option value="LEO">LEO · baja (200–2.000 km)</option>
+              <option value="GTO">GTO · transferencia geo</option>
+            </select>
+          </label>
+          <label class="campo">Masa de la carga · <b id="v-masa">5.000</b> kg
+            <input id="masa" type="range" min="50" max="100000" step="50" value="5000" aria-label="Masa de la carga en kilogramos">
+          </label>
+          <label class="campo">Presupuesto · <b id="v-presupuesto">120</b> MUSD
+            <input id="presupuesto" type="range" min="5" max="300" step="5" value="120" aria-label="Presupuesto en millones de dólares">
+          </label>
+        </div>
+
+        <!-- Pesos editables: el usuario decide qué importa. La suma se muestra
+             siempre y el score se normaliza dividiendo por ella. -->
+        <div class="pesos" style="margin-top:14px">
+          <div class="fila-titulo">
+            <h3>Pesos del score</h3>
+            <span class="suma-pesos">Σ = <b id="v-suma">100</b> <span id="v-suma-nota">normalizado</span></span>
+          </div>
+          <div class="grid grid-3">
+            <label class="campo peso">Costo · <b id="v-peso-costo">30</b>
+              <input id="peso-costo" type="range" min="0" max="100" step="5" value="30" aria-label="Peso del costo">
+            </label>
+            <label class="campo peso">Margen · <b id="v-peso-margen">20</b>
+              <input id="peso-margen" type="range" min="0" max="100" step="5" value="20" aria-label="Peso del margen de capacidad">
+            </label>
+            <label class="campo peso">Confiabilidad · <b id="v-peso-confiabilidad">25</b>
+              <input id="peso-confiabilidad" type="range" min="0" max="100" step="5" value="25" aria-label="Peso de la confiabilidad">
+            </label>
+            <label class="campo peso">Reutilización · <b id="v-peso-reutilizable">10</b>
+              <input id="peso-reutilizable" type="range" min="0" max="100" step="5" value="10" aria-label="Peso de la reutilización">
+            </label>
+            <!-- Quinto criterio: antes era una constante fija del 15 %.
+                 Ahora se puede priorizar el ahorro de presupuesto tanto como el costo. -->
+            <label class="campo peso">Remanente · <b id="v-peso-remanente">15</b>
+              <input id="peso-remanente" type="range" min="0" max="100" step="5" value="15" aria-label="Peso del remanente de presupuesto">
+            </label>
+          </div>
+          <div class="acciones" style="margin-top:10px">
+            <button class="preset" type="button" data-preset="equilibrado">Equilibrado</button>
+            <button class="preset" type="button" data-preset="costo">Costo mínimo</button>
+          </div>
+          <p class="nota">Los <b>cinco</b> sliders se normalizan dividiendo cada peso por la suma total (Σ). Si Σ = 0 se reparten 20 % cada uno (1/5). El remanente de presupuesto es un criterio más: subilo si te importa ahorrar, bajalo si preferís capacidad o confiabilidad.</p>
+        </div>
+        <div class="grid grid-2" style="margin-top:12px">
+          <div class="acciones">
+            <button class="boton secundario" id="btn-formula" type="button">Mostrar / ocultar fórmula</button>
+            <button class="boton secundario" id="btn-json" type="button">Descargar catálogo</button>
+          </div>
+          <p class="nota" id="params" style="margin:0"></p>
+        </div>
+        <div id="formula" class="aviso" style="margin-top:10px"></div>
+      </div>
+
+      <!-- Ranking: ganador destacado + alternativas. -->
+      <div class="grid grid-2" style="margin-top:16px" id="ranking"></div>
+      <div class="tarjeta" style="margin-top:16px" id="descartados-card">
+        <h2>Fuera de juego</h2>
+        <div id="descartados"><p class="nota">—</p></div>
+        <p class="nota">Acá solo cae un vehículo si su capacidad física es menor que la carga. El presupuesto ya no descarta: entra en el score como remanente, así que una opción cara puede seguir compitiendo (y quedar marcada).</p>
+      </div>
+
+      <!-- Catálogo completo para auditar los supuestos. -->
+      <div class="tarjeta" style="margin-top:16px">
+        <h2>Catálogo de lanzadores</h2>
+        <div class="tabla-wrap">
+          <table>
+            <thead>
+              <tr><th>Vehículo</th><th>Agencia</th><th class="num">LEO</th><th class="num">GTO</th><th class="num">Costo</th><th class="num">Confiab.</th><th>Reutilizable</th><th class="num">1.er vuelo</th></tr>
+            </thead>
+            <tbody id="tabla-vehiculos"><tr><td colspan="8">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+        <p class="nota" id="nota-catalogo">—</p>
+      </div>
+
+      <!-- Negocio y solución. -->
+      <div class="grid grid-2" style="margin-top:16px">
+        <div class="tarjeta solucion">
+          <span class="kicker">Modelo de negocio</span>
+          <h2>Educación que se vende como taller</h2>
+          <p><strong>Problema:</strong> el diseño de misión se enseña con slides y números inventados; los estudiantes no ven el costo real de cada decisión.</p>
+          <ul class="lista">
+            <li><b>Usuario primario:</b> universidades, escuelas técnicas y programas de divulgación.</li>
+            <li><b>Usuario secundario:</b> bootcamps espaciales, museos y equipos de hackatón.</li>
+            <li><b>Ingreso:</b> licencia por curso + talleres con datos actualizados y guía docente.</li>
+            <li><b>Costo:</b> catálogo CelesTrak y fichas públicas; el costo real es curaduría y soporte pedagógico.</li>
+          </ul>
+        </div>
+        <div class="tarjeta solucion">
+          <span class="kicker">Solución probable</span>
+          <h2>Trade-offs explícitos, no una respuesta mágica</h2>
+          <div class="pasos">
+            <div class="paso"><p><b>Elegir:</b> órbita y masa; la capacidad física es el único filtro duro. El presupuesto y los pesos ajustan el ranking.</p></div>
+            <div class="paso"><p><b>Calcular:</b> costo por kg, margen de capacidad, confiabilidad, reutilización y remanente de presupuesto.</p></div>
+            <div class="paso"><p><b>Comparar:</b> mover un slider de peso cambia el ganador; el ranking explica qué supuesto lo hizo cambiar.</p></div>
+            <div class="paso"><p><b>Discutir:</b> qué supuesto cambiaría la decisión y qué dato falta para un plan real.</p></div>
+          </div>
+          <p class="aviso" style="margin-top:10px">Las especificaciones son aproximadas y editables; el score es una herramienta didáctica, no una cotización ni una recomendación contractual.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SOLAPA 2 ================= -->
+    <section class="panel" data-panel="docs" hidden>
+      <div class="doc grid" style="margin-top:18px">
+        <div class="tarjeta">
+          <h2>Qué API usa esta app</h2>
+          <table>
+            <thead><tr><th>Fuente</th><th>Uso</th><th>Auth</th><th>Límite / nota</th></tr></thead>
+            <tbody>
+              <tr><td>CelesTrak SATCAT</td><td>Objetos activos por país, tipo y década</td><td>Abierta</td><td>Snapshot; se cachea en el servidor</td></tr>
+              <tr><td>NASA mission pages</td><td>Fichas de SLS, Falcon y New Glenn</td><td>Abierta</td><td>Especificaciones aproximadas</td></tr>
+              <tr><td>ESA / Arianespace</td><td>Ariane 64 y Vega-C</td><td>Abierta</td><td>Capacidades publicadas</td></tr>
+              <tr><td>JAXA / ISRO</td><td>H3-24L y PSLV-XL</td><td>Abierta</td><td>Páginas de misión</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Cómo se usa (ejemplo real)</h2>
+          <pre><code>curl "https://celestrak.org/satcat/records.php?GROUP=active&FORMAT=json"
+curl "http://localhost:3000/api/misiones"</code></pre>
+          <p>El servidor cuenta objetos por <code>OWNER</code>, <code>OBJECT_TYPE</code> y década de <code>LAUNCH_DATE</code>, y suma el catálogo local <code>data/vehiculos.json</code>. El score se calcula en el navegador para que los supuestos sean visibles y editables.</p>
+          <p class="enlace"><a href="https://celestrak.org/satcat/search.php" target="_blank" rel="noopener">celestrak.org/satcat/search.php</a></p>
+          <p class="enlace"><a href="https://www.nasa.gov/humans-in-space/space-launch-system/" target="_blank" rel="noopener">nasa.gov — Space Launch System</a></p>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Qué más se puede pedir</h2>
+          <ul>
+            <li><b>Δv y perfil de misión:</b> capacidad real a distintas órbitas y con maniobras.</li>
+            <li><b>Historial de lanzamientos:</b> tasa de éxito por vehículo y por año.</li>
+            <li><b>Costos por contrato:</b> precios institucionales vs. comerciales.</li>
+            <li><b>Ventanas de lanzamiento:</b> restricciones de sitio y clima.</li>
+            <li><b>Catálogo de cargas:</b> masa, volumen y potencia de misiones reales.</li>
+          </ul>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Alcance y reglas</h2>
+          <p><b>Licencia:</b> CelesTrak es de uso abierto con atribución; las fichas de vehículos se citan por agencia. El código de la app es Apache 2.0.</p>
+          <p><b>No usar:</b> datos de China (excluidos del catálogo por reglas del evento), imágenes comerciales o militares, ni credenciales en el repositorio.</p>
+          <p><b>Límite técnico:</b> capacidades y costos son aproximados y no incluyen integración, seguro, sitio ni Δv real. El score normaliza el costo contra el mejor de la lista y divide los <b>cinco</b> pesos por su suma; el remanente de presupuesto es un criterio editable más, no un valor fijo. Si cambia el conjunto de candidatos, cambia la escala del costo.</p>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Cómo mejorar para otros servicios</h2>
+          <div class="pasos">
+            <div class="paso"><p>Agregar un modelo de Δv por órbita y masa para reemplazar la capacidad nominal por capacidad disponible.</p></div>
+            <div class="paso"><p>Permitir editar también las fichas de vehículos y exportar el escenario completo (pesos, masa, presupuesto y ranking) para comparar grupos.</p></div>
+            <div class="paso"><p>Sumar historial de éxito y costo por contrato para un ranking con incertidumbre.</p></div>
+            <div class="paso"><p>Convertirlo en actividad de aula con consignas, rúbrica y comparación entre grupos.</p></div>
+          </div>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Fuentes citadas</h2>
+          <ul>
+            <li>CelesTrak — SATCAT de objetos activos.</li>
+            <li>NASA — páginas de misión y Launch Services.</li>
+            <li>ESA / Arianespace — Ariane 64 y Vega-C.</li>
+            <li>JAXA — H3; ISRO — PSLV.</li>
+            <li>Reglas Space Apps 2026 — licencias y exclusión de datos de China.</li>
+          </ul>
+          <p class="aviso">Si SATCAT no responde, se muestra un toast y el chip queda en “sin conexión”; no hay <code>data/respaldo/misiones.json</code>.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pie"><div class="wrap"><span>Aula de Misión · demo con datos abiertos</span><span>SATCAT © CelesTrak · fichas © NASA / ESA / JAXA / ISRO</span></div></footer>
+
+  <script src="/js/theme.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

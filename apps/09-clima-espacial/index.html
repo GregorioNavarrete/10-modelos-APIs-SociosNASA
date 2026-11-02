@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="es" data-theme="oscuro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>09 · Clima Espacial para Operadores — Space Apps 10</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Barra superior compartida. -->
+  <header class="topbar">
+    <div class="topbar-in">
+      <a class="marca" href="/"><span class="marca-simbolo">✦</span><span>Space Apps 10<small>CLIMA ESPACIAL</small></span></a>
+      <span class="espacio"></span>
+      <a class="volver" href="/">← Panel</a>
+      <button class="tema" data-tema-boton aria-label="Cambiar tema"><span class="tema-icono">☀</span></button>
+    </div>
+  </header>
+
+  <!-- Cabecera: riesgo operativo, no pronóstico oficial. -->
+  <div class="wrap app-head">
+    <p class="eyebrow">App 09 · Clima espacial · Operadores</p>
+    <h1 class="titulo">Clima Espacial para Operadores</h1>
+    <p class="bajada">Kp planetario, alertas SWPC y escalas NOAA traducidos a tres corredores operativos. Movés el umbral de decisión y ves qué rutas quedan expuestas: la idea no es predecir la tormenta, sino decidir cuándo degradar un servicio GNSS o una ruta polar.</p>
+    <div class="chips">
+      <span class="chip vivo" id="chip-fuente">consultando</span>
+      <span class="chip"><b>NOAA</b> SWPC</span>
+      <span class="chip"><b>KASA</b> KSWC</span>
+      <span class="chip"><b>ESA</b> Space Weather</span>
+      <span class="chip">Reto: Space weather</span>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="tabs" role="tablist" aria-label="Secciones de la app">
+      <button class="tab activo" data-tab="datos" role="tab" aria-selected="true">01 · Datos y solución</button>
+      <button class="tab" data-tab="docs" role="tab" aria-selected="false">02 · Documentación</button>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <!-- ================= SOLAPA 1 ================= -->
+    <section class="panel activo" data-panel="datos">
+      <!-- KPIs: índice actual, máximo de 24 h, nivel NOAA y flujo solar. -->
+      <div class="grid grid-4" style="margin-top:18px">
+        <div class="tarjeta">
+          <span class="kicker">Kp actual</span>
+          <div class="metric" id="m-kp">—</div>
+          <span class="delta" id="m-kp-sub">última muestra</span>
+        </div>
+        <div class="tarjeta">
+          <span class="kicker">Kp máximo 24 h</span>
+          <div class="metric" id="m-kpmax">—</div>
+          <span class="delta">ventana móvil de 24 horas</span>
+        </div>
+        <div class="tarjeta">
+          <span class="kicker">Nivel operativo</span>
+          <div class="metric" id="m-nivel" style="font-size:26px">—</div>
+          <span class="delta" id="m-nivel-sub">escala simplificada</span>
+        </div>
+        <div class="tarjeta">
+          <span class="kicker">Flujo 10,7 cm</span>
+          <div class="metric" id="m-flujo">—</div>
+          <span class="delta">sfu · actividad solar</span>
+        </div>
+      </div>
+
+      <!-- Serie de Kp + control de umbral (no requiere volver a consultar). -->
+      <div class="grid grid-2-1" style="margin-top:16px">
+        <div class="tarjeta">
+          <div class="fila-titulo">
+            <h2>Kp planetario</h2>
+            <span class="badge" id="badge-muestras">—</span>
+          </div>
+          <div id="chart-kp"></div>
+          <div class="leyenda">
+            <span><i style="background:var(--accent)"></i>Kp observado</span>
+            <span><i style="background:#f07a24"></i>Tu umbral de decisión</span>
+            <span><i style="background:#8d9ab1"></i>Escala 0–9</span>
+          </div>
+          <p class="nota">El Kp mide la perturbación geomagnética en una escala de 0 a 9. Un Kp ≥ 5 ya es tormenta geomagnética (escala G1 de NOAA).</p>
+        </div>
+
+        <div class="tarjeta">
+          <span class="kicker">Umbral de decisión</span>
+          <h2>¿A partir de qué Kp actuás?</h2>
+          <label class="campo" style="margin-top:8px">Umbral operativo · <b id="v-umbral">5</b>
+            <input id="umbral" type="range" min="0" max="9" step="0.5" value="5" aria-label="Umbral de Kp para alertar rutas">
+          </label>
+          <div class="presets" role="group" aria-label="Umbrales predefinidos">
+            <button class="preset" type="button" data-umbral="3">3 · menor</button>
+            <button class="preset" type="button" data-umbral="5">5 · tormenta G1</button>
+            <button class="preset" type="button" data-umbral="7">7 · severo</button>
+          </div>
+          <p class="nota" id="nota-umbral">—</p>
+          <div class="panel-resumen" id="resumen-umbral"></div>
+          <p class="aviso" style="margin-top:10px">El umbral es local: no cambia los datos de NOAA, solo resalta las rutas cuya exposición empieza en ese valor de Kp.</p>
+        </div>
+      </div>
+
+      <!-- Rutas: tarjetas que se encienden cuando el umbral las alcanza. -->
+      <div class="tarjeta" style="margin-top:16px">
+        <div class="fila-titulo">
+          <h2>Corredores y umbrales</h2>
+          <span class="badge" id="badge-rutas">—</span>
+        </div>
+        <div class="grid grid-3" id="rutas">
+          <div class="cargando"><span class="spinner" aria-hidden="true"></span><span>Leyendo alertas de NOAA…</span></div>
+        </div>
+        <p class="nota">Exposición y efectos son criterios de demo inspirados en guías de GNSS/aviación. No reemplazan un NOTAM ni un boletín ICAO.</p>
+      </div>
+
+      <!-- Alertas SWPC y escalas NOAA actuales. -->
+      <div class="grid grid-2" style="margin-top:16px">
+        <div class="tarjeta">
+          <div class="fila-titulo">
+            <h2>Alertas SWPC</h2>
+            <span class="badge" id="badge-alertas">—</span>
+          </div>
+          <div id="alertas" class="alertas">
+            <div class="cargando"><span class="spinner" aria-hidden="true"></span><span>Consultando alertas…</span></div>
+          </div>
+        </div>
+        <div class="tarjeta">
+          <h2>Escalas NOAA de hoy</h2>
+          <p>G = geomagnética, S = radiación solar, R = apagones de radio. El nivel 0 significa “sin evento”.</p>
+          <div class="tabla-wrap">
+            <table>
+              <thead><tr><th>Escala</th><th class="num">Nivel</th><th>Lectura</th></tr></thead>
+              <tbody id="tabla-escalas"><tr><td colspan="3">Cargando…</td></tr></tbody>
+            </table>
+          </div>
+          <p class="nota" id="nota-escalas">—</p>
+        </div>
+      </div>
+
+      <!-- Negocio y solución. -->
+      <div class="grid grid-2" style="margin-top:16px">
+        <div class="tarjeta solucion">
+          <span class="kicker">Modelo de negocio</span>
+          <h2>Riesgo por corredor, no titulares</h2>
+          <p><strong>Problema:</strong> las alertas SWPC son globales y técnicas; un operador necesita saber si su ruta polar, su flota o su red de riego se degradan hoy.</p>
+          <ul class="lista">
+            <li><b>Usuario primario:</b> operadores GNSS, aerolíneas y proveedores de servicios de posicionamiento.</li>
+            <li><b>Usuario secundario:</b> operadores eléctricos, agricultura de precisión y defensa civil.</li>
+            <li><b>Ingreso:</b> API por corredor + panel de cumplimiento y reportes post-evento.</li>
+            <li><b>Costo:</b> datos NOAA abiertos; el costo real es calibración con datos de flota y soporte 24/7.</li>
+          </ul>
+        </div>
+        <div class="tarjeta solucion">
+          <span class="kicker">Solución probable</span>
+          <h2>Un índice de riesgo por corridor</h2>
+          <div class="pasos">
+            <div class="paso"><p><b>Observar:</b> Kp, Kp máximo de 24 h y flujo solar de las últimas horas.</p></div>
+            <div class="paso"><p><b>Clasificar:</b> traducir el Kp a nivel operativo con la escala G de NOAA.</p></div>
+            <div class="paso"><p><b>Cruzar:</b> comparar el umbral del corredor con el Kp vigente y con su exposición.</p></div>
+            <div class="paso"><p><b>Actuar:</b> sugerir mitigación (retrasar EVA, cambiar constelación, postergar vuelo polar) y registrar la decisión.</p></div>
+          </div>
+          <p class="aviso" style="margin-top:10px">Índice operativo simplificado: no reemplaza boletines ICAO/NOAA ni servicios certificados de clima espacial.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SOLAPA 2 ================= -->
+    <section class="panel" data-panel="docs" hidden>
+      <div class="doc grid" style="margin-top:18px">
+        <div class="tarjeta">
+          <h2>Qué API usa esta app</h2>
+          <table>
+            <thead><tr><th>Fuente</th><th>Uso</th><th>Auth</th><th>Límite / nota</th></tr></thead>
+            <tbody>
+              <tr><td>SWPC Kp</td><td>Índice planetario de 3 h</td><td>Abierta</td><td>JSON público; horas UTC sin “Z”</td></tr>
+              <tr><td>SWPC scales</td><td>Escalas G/S/R vigentes</td><td>Abierta</td><td>Nivel 0–5 por escala</td></tr>
+              <tr><td>SWPC alerts</td><td>Warnings, watches y alerts</td><td>Abierta</td><td>Texto libre; se recortan 10</td></tr>
+              <tr><td>SWPC 10 cm flux</td><td>Flujo solar de 30 días</td><td>Abierta</td><td>Puede faltar; se muestra “—”</td></tr>
+              <tr><td>KASA/KSWC, ESA SWE</td><td>Contraste internacional (mejora)</td><td>Variable</td><td>Documentado, sin integración en el MVP</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Cómo se usa (ejemplo real)</h2>
+          <pre><code>curl "https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json"
+curl "https://services.swpc.noaa.gov/products/noaa-scales.json"
+curl "https://services.swpc.noaa.gov/products/alerts.json"
+curl "http://localhost:3000/api/clima-espacial"</code></pre>
+          <p>Las horas de Kp llegan como <code>"2025-10-28 03:00:00"</code> sin zona: se interpretan como UTC. La app usa <code>new Date(t + 'Z')</code> para calcular la ventana de 24 h y ordenar la serie.</p>
+          <p class="enlace"><a href="https://services.swpc.noaa.gov/products/" target="_blank" rel="noopener">services.swpc.noaa.gov/products/</a></p>
+          <p class="enlace"><a href="https://www.swpc.noaa.gov/products-and-data" target="_blank" rel="noopener">swpc.noaa.gov/products-and-data</a></p>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Qué más se puede pedir</h2>
+          <ul>
+            <li><b>Viento solar en L1:</b> DSCOVR/ACE para anticipar el Kp con 30–60 min.</li>
+            <li><b>Índice Dst:</b> intensidad de la corriente de anillo, más físico que Kp.</li>
+            <li><b>TEC ionosférico:</b> retardo GNSS por región.</li>
+            <li><b>Pronóstico de 3 días:</b> Kp previsto de SWPC para planificación.</li>
+            <li><b>Datos KASA/ESA:</b> validación cruzada de alertas regionales.</li>
+          </ul>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Alcance y reglas</h2>
+          <p><b>Licencia:</b> datos NOAA de dominio público con atribución; KASA y ESA tienen sus propios términos de uso.</p>
+          <p><b>No usar:</b> datos de China, imágenes comerciales/militares, ni presentar este índice como boletín oficial.</p>
+          <p><b>Límite técnico:</b> el umbral de las rutas es un supuesto de demo y el Kp es planetario, no local. La respuesta ionosférica depende de latitud, hora y geometría de la constelación.</p>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Cómo mejorar para otros servicios</h2>
+          <div class="pasos">
+            <div class="paso"><p>Sumar viento solar de L1 y pronóstico Kp de 3 días para pasar de “ahora” a “próximas horas”.</p></div>
+            <div class="paso"><p>Calibrar umbrales por corredor con datos reales de degradación GNSS de una flota.</p></div>
+            <div class="paso"><p>Integrar TEC y mapas ionosféricos para estimar error de posicionamiento por región.</p></div>
+            <div class="paso"><p>Agregar registro de decisiones y reportes post-evento para auditoría operativa.</p></div>
+          </div>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Fuentes citadas</h2>
+          <ul>
+            <li>NOAA SWPC — Kp, escalas G/S/R, alertas y flujo 10,7 cm.</li>
+            <li>KASA/KSWC — Korean Space Weather Center (documentado).</li>
+            <li>ESA Space Weather Service — portal y servicios europeos.</li>
+            <li>ICAO — guía de clima espacial para aviación.</li>
+            <li>Reglas Space Apps 2026 — licencias y uso de datos.</li>
+          </ul>
+          <p class="aviso">Si SWPC no responde, se muestra un toast y el chip queda en “sin conexión”; no hay <code>data/respaldo/clima.json</code>. Esta app no reemplaza boletines ICAO/NOAA.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pie"><div class="wrap"><span>Clima Espacial para Operadores · demo con datos abiertos</span><span>SWPC © NOAA · KSWC © KASA · SWE © ESA</span></div></footer>
+
+  <script src="/js/theme.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="es" data-theme="oscuro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>08 · Jukebox de la Tierra — Space Apps 10</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Barra superior compartida. -->
+  <header class="topbar">
+    <div class="topbar-in">
+      <a class="marca" href="/"><span class="marca-simbolo">✦</span><span>Space Apps 10<small>JUKEBOX DE LA TIERRA</small></span></a>
+      <span class="espacio"></span>
+      <a class="volver" href="/">← Panel</a>
+      <button class="tema" data-tema-boton aria-label="Cambiar tema"><span class="tema-icono">☀</span></button>
+    </div>
+  </header>
+
+  <!-- Cabecera: la Tierra como álbum diario, con ficha de accesibilidad. -->
+  <div class="wrap app-head">
+    <p class="eyebrow">App 08 · Tierra · EPIC y GIBS</p>
+    <h1 class="titulo">Jukebox de la Tierra</h1>
+    <p class="bajada">Las imágenes que DSCOVR/EPIC tomó de la Tierra en un día, con su texto alternativo real y el mapa GIBS de la misma fecha. Un álbum verificable: cada foto declara hora, centroide y fuente, y cada texto se puede leer con lector de pantalla.</p>
+    <div class="chips">
+      <span class="chip vivo" id="chip-fuente">consultando</span>
+      <span class="chip"><b>NASA</b> EPIC / DSCOVR</span>
+      <span class="chip"><b>NASA</b> GIBS / Worldview</span>
+      <span class="chip">Dominio público</span>
+      <span class="chip">Reto: Art &amp; technology</span>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="tabs" role="tablist" aria-label="Secciones de la app">
+      <button class="tab activo" data-tab="datos" role="tab" aria-selected="true">01 · Datos y solución</button>
+      <button class="tab" data-tab="docs" role="tab" aria-selected="false">02 · Documentación</button>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <!-- ================= SOLAPA 1 ================= -->
+    <section class="panel activo" data-panel="datos">
+      <!-- KPIs del día: cuántas fotos, ventana, satélite y distancia. -->
+      <div class="grid grid-4" style="margin-top:18px">
+        <div class="tarjeta">
+          <span class="kicker">Imágenes del día</span>
+          <div class="metric" id="m-cantidad">—</div>
+          <span class="delta" id="m-cantidad-sub">resolución automática</span>
+        </div>
+        <div class="tarjeta">
+          <span class="kicker">Fecha activa</span>
+          <div class="metric" id="m-fecha" style="font-size:24px">—</div>
+          <span class="delta" id="m-fecha-sub">la del último día con datos</span>
+        </div>
+        <div class="tarjeta">
+          <span class="kicker">Ventana de captura</span>
+          <div class="metric" id="m-ventana" style="font-size:22px">—</div>
+          <span class="delta">primera a última del día</span>
+        </div>
+        <div class="tarjeta">
+          <span class="kicker">Distancia a la Tierra</span>
+          <div class="metric" id="m-distancia" style="font-size:26px">—</div>
+          <span class="delta" id="m-satelite">DSCOVR / EPIC</span>
+        </div>
+      </div>
+
+      <!-- Controles: fecha exacta o atajos relativos. -->
+      <div class="tarjeta" style="margin-top:16px">
+        <div class="fila-titulo">
+          <h2>Elegí el día</h2>
+          <span class="badge" id="badge-fecha">—</span>
+        </div>
+        <div class="grid grid-3" style="align-items:end">
+          <label class="campo">Fecha (UTC)<input id="fecha" type="date" aria-label="Fecha de las imágenes"></label>
+          <div class="acciones"><button class="boton" id="btn-buscar" type="button">Buscar álbum</button></div>
+          <div class="presets" role="group" aria-label="Fechas rápidas" style="margin-top:0">
+            <button class="preset" type="button" data-dias="0">Hoy</button>
+            <button class="preset" type="button" data-dias="3">Hace 3 días</button>
+            <button class="preset" type="button" data-dias="7">Hace 7 días</button>
+            <button class="preset" type="button" data-dias="30">Hace 30 días</button>
+          </div>
+        </div>
+        <p class="nota">EPIC no publica todos los días. Si la fecha no tiene imágenes, el servidor retrocede hasta 20 días y devuelve la fecha real encontrada; el badge de la derecha lo muestra.</p>
+      </div>
+
+      <!-- Galería EPIC: cada tarjeta es un botón con alt = caption real. -->
+      <div class="tarjeta" style="margin-top:16px">
+        <div class="fila-titulo">
+          <h2>Álbum EPIC</h2>
+          <div class="acciones">
+            <span class="badge" id="badge-galeria">—</span>
+            <button class="boton secundario" id="btn-json" type="button">Descargar JSON</button>
+          </div>
+        </div>
+        <div class="galeria" id="galeria">
+          <div class="cargando"><span class="spinner" aria-hidden="true"></span><span>Buscando imágenes de la Tierra…</span></div>
+        </div>
+
+        <!-- Sonificación: el botón se habilita cuando hay una imagen activa. -->
+        <div class="audio-controles">
+          <button class="boton" id="btn-sonificar" type="button" disabled>▶ Sonificar imagen</button>
+          <button class="boton secundario" id="btn-detener" type="button" disabled>■ Detener</button>
+          <div class="audio-estado">
+            <div class="audio-barra" id="audio-barra" role="progressbar" aria-label="Progreso de la sonificación" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <i id="audio-progreso"></i>
+            </div>
+            <span id="audio-texto" aria-live="polite">Elegí una imagen de la galería para sonificarla.</span>
+          </div>
+        </div>
+
+        <p class="nota">Usamos el proxy local <code>/api/jukebox/imagen</code> para evitar CORS. El <code>alt</code> de cada foto es el <em>caption</em> original de NASA, no “imagen de la Tierra”.</p>
+      </div>
+
+      <!-- Mapa GIBS del mismo día y ficha de accesibilidad de la imagen seleccionada. -->
+      <div class="grid grid-2-1" style="margin-top:16px">
+        <div class="tarjeta">
+          <div class="fila-titulo">
+            <h2>Mapa GIBS del día</h2>
+            <span class="badge" id="badge-gibs">—</span>
+          </div>
+          <div id="mapa" class="mapa" role="img" aria-label="Mapa satelital diario de la Tierra (GIBS)"></div>
+          <p class="nota">Capa MODIS Terra True Color del día consultado, servida como WMTS por NASA GIBS. Los círculos marcan los centroides de las imágenes EPIC.</p>
+        </div>
+
+        <div class="tarjeta">
+          <span class="kicker">Ficha de accesibilidad</span>
+          <h2>Qué se puede leer sin ver</h2>
+          <div id="ficha-img" class="ficha" aria-live="polite">
+            <p class="aviso">Elegí una imagen de la galería para ver su ficha.</p>
+          </div>
+          <ul class="lista" style="margin-top:12px">
+            <li><b>Texto alternativo:</b> el caption de NASA describe la posición del satélite y la fase; se usa tal cual.</li>
+            <li><b>Contraste:</b> la ficha usa texto y fondo del tema, no depende del color de la foto.</li>
+            <li><b>Teclado:</b> cada imagen es un botón; se recorre con Tab y se activa con Enter.</li>
+            <li><b>Lectura alternativa:</b> hora UTC, centroide y distancia completan lo que la foto no dice.</li>
+            <li><b>Sonificación:</b> el audio no es el sonido real de la Tierra; es una traducción de píxeles a frecuencia (brillo → nota) para explorar la imagen sin verla.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Negocio y solución. -->
+      <div class="grid grid-2" style="margin-top:16px">
+        <div class="tarjeta solucion">
+          <span class="kicker">Modelo de negocio</span>
+          <h2>Educación inclusiva con datos públicos</h2>
+          <p><strong>Problema:</strong> el material espacial suele ser visual y en inglés; estudiantes con discapacidad visual o sin buen ancho de banda quedan afuera.</p>
+          <ul class="lista">
+            <li><b>Usuario primario:</b> docentes de secundaria y programas de divulgación científica.</li>
+            <li><b>Usuario secundario:</b> museos, bibliotecas y medios que necesitan imágenes con licencia clara.</li>
+            <li><b>Ingreso:</b> licencia por institución educativa + talleres y guías descargables.</li>
+            <li><b>Costo:</b> imágenes de dominio público; el costo real es traducción, curaduría y accesibilidad.</li>
+          </ul>
+        </div>
+        <div class="tarjeta solucion">
+          <span class="kicker">Solución probable</span>
+          <h2>Un álbum que se puede escuchar y leer</h2>
+          <div class="pasos">
+            <div class="paso"><p><b>Elegir:</b> fecha con imágenes reales; el servidor resuelve los huecos sin inventar días.</p></div>
+            <div class="paso"><p><b>Mostrar:</b> galería con caption original como alt y datos de hora y centroide.</p></div>
+            <div class="paso"><p><b>Contextualizar:</b> mapa GIBS del mismo día para ubicar nubes y continentes.</p></div>
+            <div class="paso"><p><b>Incluir:</b> ficha accesible y sonificación de la imagen activa con Web Audio (brillo → frecuencia).</p></div>
+          </div>
+          <p class="aviso" style="margin-top:10px">El botón Sonificar traduce la imagen activa a una secuencia de tonos de 8 s; no reproduce el sonido real de la Tierra ni datos de audio de la misión.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SOLAPA 2 ================= -->
+    <section class="panel" data-panel="docs" hidden>
+      <div class="doc grid" style="margin-top:18px">
+        <div class="tarjeta">
+          <h2>Qué API usa esta app</h2>
+          <table>
+            <thead><tr><th>Fuente</th><th>Uso</th><th>Auth</th><th>Límite / nota</th></tr></thead>
+            <tbody>
+              <tr><td>NASA EPIC <code>/api/natural/date</code></td><td>Lista de imágenes de un día</td><td>Abierta</td><td>Sin clave; no todos los días tienen datos</td></tr>
+              <tr><td>NASA EPIC <code>/archive/natural</code></td><td>PNG original de cada imagen</td><td>Abierta</td><td>Proxy local para evitar CORS</td></tr>
+              <tr><td>NASA GIBS WMTS</td><td>Mapa diario MODIS True Color</td><td>Abierta</td><td>Zoom máximo 9; tiles por fecha</td></tr>
+              <tr><td>Earth Information Center</td><td>Contexto y materiales educativos</td><td>Abierta</td><td>Contenido editorial, no API de datos</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Cómo se usa (ejemplo real)</h2>
+          <pre><code>curl "https://epic.gsfc.nasa.gov/api/natural/date/2025-10-28"
+curl "http://localhost:3000/api/jukebox?fecha=2025-10-28"</code></pre>
+          <p>La app replica el template WMTS que devuelve el servidor, con <code>{fecha}</code> ya sustituida y <code>{z}/{y}/{x}</code> tal como los espera Leaflet. La galería usa <code>imagenes[].local</code>, el proxy del backend.</p>
+          <p>La sonificación usa la Web Audio API nativa: un <code>OscillatorNode</code> + <code>GainNode</code> por paso, sin librerías. El canvas muestrea la imagen del proxy local (mismo origen) y mapea la luminancia a una escala pentatónica.</p>
+          <p class="enlace"><a href="https://epic.gsfc.nasa.gov/about/api" target="_blank" rel="noopener">epic.gsfc.nasa.gov/about/api</a></p>
+          <p class="enlace"><a href="https://nasa-gibs.github.io/gibs-api-docs/" target="_blank" rel="noopener">nasa-gibs.github.io/gibs-api-docs</a></p>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Qué más se puede pedir</h2>
+          <ul>
+            <li><b>EPIC enhanced:</b> otra paleta y productos mejorados del mismo instrumento.</li>
+            <li><b>GIBS por capa:</b> nubes, aerosoles, temperatura superficial y hielo marino del mismo día.</li>
+            <li><b>Worldview Snapshots:</b> imágenes compuestas listas para clase.</li>
+            <li><b>Traducciones:</b> caption en español, inglés y portugués para escuelas.</li>
+            <li><b>Metadatos de color:</b> histogramas por canal para una sonificación defendible.</li>
+          </ul>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Alcance y reglas</h2>
+          <p><b>Licencia:</b> imágenes y datos de NASA son de dominio público; atribución a NASA/DSCOVR y NASA GIBS. El código de la app es Apache 2.0.</p>
+          <p><b>No usar:</b> imágenes comerciales o militares, COSMO-SkyMed, datos de China, ni credenciales en el repositorio.</p>
+          <p><b>Límite técnico:</b> EPIC mira siempre el hemisferio iluminado desde L1; no es una cobertura global y puede faltar un día completo. El mapa GIBS es otra fuente y otra hora, no la misma escena.</p>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Cómo mejorar para otros servicios</h2>
+          <div class="pasos">
+            <div class="paso"><p>Mejorar la sonificación actual: color dominante → timbre, histogramas por canal y control de velocidad/volumen accesible.</p></div>
+            <div class="paso"><p>Traducir los captions y generar descripciones largas asistidas, revisadas por docentes.</p></div>
+            <div class="paso"><p>Permitir descargar una ficha PDF con imagen, alt, créditos y actividad de aula.</p></div>
+            <div class="paso"><p>Sumar capas GIBS comparables (nubes vs. aerosoles) y una línea de tiempo por día.</p></div>
+          </div>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Fuentes citadas</h2>
+          <ul>
+            <li>NASA EPIC — DSCOVR Earth Polychromatic Imaging Camera, API natural/date.</li>
+            <li>NASA GIBS — Global Imagery Browse Services, WMTS.</li>
+            <li>NASA Worldview — visor y snapshots.</li>
+            <li>NASA Earth Information Center — contexto científico.</li>
+            <li>Reglas Space Apps 2026 — licencias y uso de datos.</li>
+          </ul>
+          <p class="aviso">Si EPIC o GIBS no responden, la app avisa con un toast y apaga el chip; todavía no hay <code>data/respaldo/jukebox.json</code>.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pie"><div class="wrap"><span>Jukebox de la Tierra · demo con datos abiertos</span><span>EPIC © NASA/DSCOVR · GIBS © NASA EOSDIS</span></div></footer>
+
+  <script src="/js/theme.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

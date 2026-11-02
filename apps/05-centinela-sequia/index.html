@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="es" data-theme="oscuro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>05 · Centinela de Sequía — Space Apps 10</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Barra superior compartida: marca, vuelta al panel y cambio de tema. -->
+  <header class="topbar">
+    <div class="topbar-in">
+      <a class="marca" href="/"><span class="marca-simbolo">✦</span><span>Space Apps 10<small>CENTINELA DE SEQUÍA</small></span></a>
+      <span class="espacio"></span>
+      <a class="volver" href="/">← Panel</a>
+      <button class="tema" data-tema-boton aria-label="Cambiar tema"><span class="tema-icono">☀</span></button>
+    </div>
+  </header>
+
+  <!-- Cabecera de la app: reto, promesa y fuentes declaradas. -->
+  <div class="wrap app-head">
+    <p class="eyebrow">App 05 · Sequía · Índice SPI-3</p>
+    <h1 class="titulo">Centinela de Sequía</h1>
+    <p class="bajada">Serie mensual de lluvia para un punto y un índice SPI-3 construido con acumulados móviles de tres meses. El semáforo responde a una pregunta simple: ¿este trimestre está por debajo de lo normal, y cuánto?</p>
+    <div class="chips">
+      <span class="chip vivo" id="chip-fuente">consultando</span>
+      <span class="chip"><b>NASA</b> POWER</span>
+      <span class="chip"><b>JAXA</b> GSMaP (mejora)</span>
+      <span class="chip"><b>WMO</b> referencia SPI</span>
+      <span class="chip">Reto: Drought early warning</span>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="tabs" role="tablist" aria-label="Secciones de la app">
+      <button class="tab activo" data-tab="datos" role="tab" aria-selected="true">01 · Datos y solución</button>
+      <button class="tab" data-tab="docs" role="tab" aria-selected="false">02 · Documentación</button>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <!-- ================= SOLAPA 1: DATOS Y SOLUCIÓN ================= -->
+    <section class="panel activo" data-panel="datos">
+      <!-- KPIs: SPI actual (con semáforo), acumulado trimestral, mínimo histórico y cobertura. -->
+      <div class="grid grid-4" style="margin-top:18px">
+        <div class="tarjeta">
+          <span class="kicker">SPI actual</span>
+          <div class="metric" id="m-spi">—</div>
+          <span class="delta" id="m-spi-sub">sin cálculo</span>
+        </div>
+        <div class="tarjeta">
+          <span class="kicker">Acumulado 3 meses</span>
+          <div class="metric" id="m-acum">—</div>
+          <span class="delta">mm en la ventana móvil</span>
+        </div>
+        <div class="tarjeta">
+          <span class="kicker">Mínimo SPI</span>
+          <div class="metric" id="m-min">—</div>
+          <span class="delta">peor trimestre de la serie</span>
+        </div>
+        <div class="tarjeta">
+          <span class="kicker">Meses analizados</span>
+          <div class="metric" id="m-meses">—</div>
+          <span class="delta" id="m-meses-sub">—</span>
+        </div>
+      </div>
+
+      <!-- Gráfico principal + panel de consulta con presets. -->
+      <div class="grid grid-2-1" style="margin-top:16px">
+        <div class="tarjeta">
+          <div class="fila-titulo">
+            <h2>Índice SPI-3</h2>
+            <span class="badge" id="badge-serie">—</span>
+          </div>
+          <div id="chart-spi"></div>
+          <div class="leyenda">
+            <span><i style="background:var(--accent)"></i><b id="leyenda-metodo">SPI-3 (gamma)</b></span>
+            <span><i style="background:#8d9ab1"></i>Umbral 0 (normal)</span>
+            <span><i style="background:#e5484d"></i>−1,5 sequía severa</span>
+          </div>
+          <p class="nota" id="nota-metodo">El SPI-3 se ajusta con una distribución gamma por mes calendario sobre los acumulados de 3 meses y se transforma a normal estándar. Si la serie es demasiado corta para el ajuste, el servidor usa un z-score empírico como respaldo y lo declara en <code>meta.metodoDetalle</code>.</p>
+        </div>
+
+        <div class="tarjeta">
+          <span class="kicker">Consulta</span>
+          <h2>Elegí el punto y la ventana</h2>
+          <div class="grid" style="gap:10px;margin-top:10px">
+            <label class="campo">Latitud<input id="lat" type="number" step="0.01" value="-27.78" aria-label="Latitud del punto"></label>
+            <label class="campo">Longitud<input id="lon" type="number" step="0.01" value="-64.26" aria-label="Longitud del punto"></label>
+            <label class="campo">Años de historia (3–15)<input id="anios" type="number" min="3" max="15" step="1" value="5" aria-label="Años de historia"></label>
+            <button class="boton" id="btn-consultar" type="button">Calcular sequía</button>
+          </div>
+          <div class="presets" role="group" aria-label="Puntos predefinidos">
+            <button class="preset" type="button" data-lat="-27.78" data-lon="-64.26">Santiago del Estero</button>
+            <button class="preset" type="button" data-lat="-31.40" data-lon="-64.20">Córdoba</button>
+            <button class="preset" type="button" data-lat="-24.78" data-lon="-65.42">Salta</button>
+            <button class="preset" type="button" data-lat="-32.89" data-lon="-68.84">Mendoza</button>
+            <button class="preset" type="button" data-lat="-38.72" data-lon="-62.27">Bahía Blanca</button>
+          </div>
+          <p class="nota">POWER entrega celdas de ~50 km: el punto representa un distrito, no una chacra. La primera consulta puede tardar; después queda en caché del servidor.</p>
+        </div>
+      </div>
+
+      <!-- Normales mensuales: referencia de "cómo es un año típico" en ese punto. -->
+      <div class="tarjeta" style="margin-top:16px">
+        <h2>Normales mensuales</h2>
+        <p>Promedio de lluvia por mes calendario en los años consultados. Sirve para leer si el déficit es estacional o sostenido.</p>
+        <div id="chart-normales"></div>
+      </div>
+
+      <!-- Tabla mensual: el detalle auditable detrás de los KPIs. -->
+      <div class="tarjeta" style="margin-top:16px">
+        <div class="fila-titulo">
+          <h2>Serie mensual</h2>
+          <button class="boton secundario" id="btn-json" type="button">Descargar JSON</button>
+        </div>
+        <div class="tabla-wrap" style="max-height:360px">
+          <table>
+            <thead>
+              <tr><th>Mes</th><th class="num">Lluvia (mm)</th><th class="num">Acum. 3 meses</th><th class="num">SPI-3</th><th>Lectura</th></tr>
+            </thead>
+            <tbody id="tabla-mensual">
+              <tr><td colspan="5">Cargando…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="nota">Los dos primeros meses no tienen SPI-3 porque todavía no hay tres meses acumulados.</p>
+      </div>
+
+      <!-- Modelo de negocio y solución, con el límite del MVP declarado. -->
+      <div class="grid grid-2" style="margin-top:16px">
+        <div class="tarjeta solucion">
+          <span class="kicker">Modelo de negocio</span>
+          <h2>Alerta temprana que se paga antes del desastre</h2>
+          <p><strong>Problema:</strong> la sequía se declara cuando el rinde ya cayó; municipios y aseguradoras reaccionan con datos tardíos y dispersos.</p>
+          <ul class="lista">
+            <li><b>Usuario primario:</b> municipios y defensa civil provincial (mesa de gestión de riesgo).</li>
+            <li><b>Usuario secundario:</b> aseguradoras agropecuarias, cooperativas y organismos de cuenca.</li>
+            <li><b>Ingreso:</b> suscripción mensual por distrito + informes de evento y API por polígono.</li>
+            <li><b>Costo:</b> datos POWER gratuitos; el costo real es normalización de series, validación local y canal de alertas.</li>
+          </ul>
+        </div>
+        <div class="tarjeta solucion">
+          <span class="kicker">Solución probable</span>
+          <h2>De la serie al aviso en cuatro pasos</h2>
+          <div class="pasos">
+            <div class="paso"><p><b>Serie:</b> descargar lluvia diaria y agregarla a mensual para el punto o polígono del distrito.</p></div>
+            <div class="paso"><p><b>Índice:</b> ajustar una distribución gamma por mes calendario sobre los acumulados de 3 meses y transformar la probabilidad a normal estándar (con respaldo z-score si la serie es corta).</p></div>
+            <div class="paso"><p><b>Umbral:</b> clasificar en normal, débil, moderada, severa y extrema según la escala SPI.</p></div>
+            <div class="paso"><p><b>Aviso:</b> publicar tablero y enviar SMS/voz en español, inglés y portugués a productores registrados.</p></div>
+          </div>
+          <p class="nota" style="margin-top:10px">El MVP calcula solo el componente meteorológico (SPI-3). El índice compuesto que suma humedad de suelo y NDVI es la mejora prioritaria para pasar de sequía meteorológica a sequía agrícola.</p>
+          <p class="aviso" style="margin-top:10px">Este MVP implementa el SPI-3 gamma por mes calendario con respaldo z-score declarado. Las alertas SMS/voz siguen siendo mejora futura; el ajuste gamma con series cortas es una aproximación, no el SPI operativo de 30+ años.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SOLAPA 2: DOCUMENTACIÓN ================= -->
+    <section class="panel" data-panel="docs" hidden>
+      <div class="doc grid" style="margin-top:18px">
+        <div class="tarjeta">
+          <h2>Qué API usa esta app</h2>
+          <table>
+            <thead><tr><th>Fuente</th><th>Uso</th><th>Auth</th><th>Límite / nota</th></tr></thead>
+            <tbody>
+              <tr><td>NASA POWER daily</td><td>Lluvia diaria <code>PRECTOTCORR</code> por punto</td><td>Abierta</td><td>Celda ~50 km; pide rango de fechas</td></tr>
+              <tr><td>NASA POWER climatology</td><td>Normales de referencia (opcional)</td><td>Abierta</td><td>Base 2001–2020</td></tr>
+              <tr><td>JAXA GSMaP</td><td>Lluvia satelital horaria (mejora)</td><td>Registro</td><td>Mejor resolución, requiere alta</td></tr>
+              <tr><td>CHIRPS (UCSB)</td><td>Serie larga validada (mejora)</td><td>Abierta</td><td>0,05°, buena para tendencias</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Cómo se usa (ejemplo real)</h2>
+          <pre><code>curl "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=PRECTOTCORR&community=AG&latitude=-27.78&longitude=-64.26&start=20210101&end=20251231&format=JSON"</code></pre>
+          <p>La app suma los días por mes, arma los acumulados móviles de tres meses y devuelve <code>{ mensual, normales, resumen }</code>. El <code>-999</code> de POWER se descarta antes de sumar.</p>
+          <p class="enlace"><a href="https://power.larc.nasa.gov/docs/services/api/" target="_blank" rel="noopener">power.larc.nasa.gov/docs/services/api/</a></p>
+          <p class="enlace"><a href="https://www.droughtmanagement.info/lng/en/indices/standardized-precipitation-index-spi/" target="_blank" rel="noopener">droughtmanagement.info — SPI</a></p>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Qué más se puede pedir</h2>
+          <ul>
+            <li><b>Temperatura y evapotranspiración:</b> para pasar de SPI (lluvia) a SPEI (balance hídrico).</li>
+            <li><b>Humedad de suelo (SMAP / SoilGrids):</b> sequía agrícola además de meteorológica.</li>
+            <li><b>GSMaP horaria:</b> eventos intensos y ventanas de siembra.</li>
+            <li><b>NDVI / Sentinel-2:</b> confirmar el impacto en vegetación.</li>
+            <li><b>Polígonos de distrito:</b> promediar la celda sobre el área administrativa real.</li>
+          </ul>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Alcance y reglas</h2>
+          <p><b>Licencia:</b> datos NASA POWER abiertos y gratuitos con atribución; GSMaP tiene sus propios términos y registro.</p>
+          <p><b>No usar:</b> imágenes comerciales o militares, productos COSMO-SkyMed, datos de China ni credenciales dentro del repositorio.</p>
+          <p><b>Límite técnico:</b> el SPI-3 se ajusta con una distribución gamma por mes calendario (Thom) y cae a un z-score empírico si no hay muestras suficientes; el método real se declara en <code>meta.metodoDetalle</code>. El SPI operativo de la WMO usa 30+ años para estabilizar los parámetros; con una serie corta el mínimo histórico es optimista y el ajuste es inestable.</p>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Cómo mejorar para otros servicios</h2>
+          <div class="pasos">
+            <div class="paso"><p>Pasar del ajuste gamma con series cortas al SPI operativo validado con 30+ años de datos y control de calidad del centro climático.</p></div>
+            <div class="paso"><p>Incorporar GSMaP/CHIRPS para interpolar la celda POWER y bajar el error en zonas de montaña.</p></div>
+            <div class="paso"><p>Agregar SPEI con temperatura y evapotranspiración para separar sequía meteorológica de agrícola.</p></div>
+            <div class="paso"><p>Conectar alertas SMS/voz en español, inglés y portugués con una API de mensajería y registro de productores.</p></div>
+          </div>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Fuentes citadas</h2>
+          <ul>
+            <li>NASA POWER — documentación de la API diaria y parámetros.</li>
+            <li>WMO / National Drought Mitigation Center — escala e interpretación del SPI.</li>
+            <li>JAXA — GSMaP (Global Satellite Mapping of Precipitation).</li>
+            <li>UCSB Climate Hazards Center — CHIRPS.</li>
+            <li>Reglas Space Apps 2026 — licencias y uso de datos.</li>
+          </ul>
+          <p class="aviso">Si POWER no responde, la app muestra el error con un toast y el chip queda en “sin conexión”; todavía no hay <code>data/respaldo/sequia.json</code> en el repositorio.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pie"><div class="wrap"><span>Centinela de Sequía · demo con datos abiertos</span><span>POWER © NASA · SPI © WMO</span></div></footer>
+
+  <script src="/js/theme.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

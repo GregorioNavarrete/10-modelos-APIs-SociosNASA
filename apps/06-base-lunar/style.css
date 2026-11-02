@@ -1,0 +1,99 @@
+:root { --accent: #b8b8ff; --accent-2: #7c7cff; }
+
+/* Pestañas con brillo de regolito iluminado. */
+.tabs { border-bottom-color: color-mix(in srgb, var(--accent) 28%, var(--linea)); }
+.tab.activo {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 14%, transparent), transparent);
+  border-radius: 10px 10px 0 0;
+}
+
+.fila-titulo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.fila-titulo h2 { margin: 0; }
+
+/* Tarjetas de sitio: fondo tenue, borde que se enciende en el mejor candidato. */
+.sitio-card {
+  border: 1px solid var(--linea);
+  border-radius: 12px;
+  padding: 14px;
+  background: linear-gradient(180deg, var(--panel-2), transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sitio-card.mejor { border-color: color-mix(in srgb, var(--accent) 55%, var(--linea)); box-shadow: 0 0 26px color-mix(in srgb, var(--accent) 12%, transparent); }
+.sitio-cab { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.sitio-cab h3 { font-size: 14px; margin: 0; line-height: 1.25; }
+.punto-color { width: 9px; height: 9px; border-radius: 50%; flex: none; box-shadow: 0 0 8px currentColor; }
+.sitio-metric { font-family: var(--mono); font-size: 30px; font-weight: 700; letter-spacing: -0.03em; margin-top: 8px; }
+.sitio-sub { font-size: 10.5px; color: var(--muted); font-family: var(--mono); letter-spacing: .04em; }
+.sitio-barras { margin-top: 10px; display: grid; gap: 4px; font-size: 11px; color: var(--muted); }
+.sitio-barras div { display: flex; justify-content: space-between; gap: 8px; }
+.sitio-barras b { color: var(--texto); font-family: var(--mono); }
+.barra { height: 5px; border-radius: 99px; background: var(--linea); overflow: hidden; display: block !important; }
+.barra i { display: block; height: 100%; border-radius: 99px; }
+.tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+.tags span { font-family: var(--mono); font-size: 9.5px; padding: 3px 6px; border: 1px solid var(--linea); border-radius: 5px; color: var(--muted); }
+.tags .tag-ok { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 50%, var(--linea)); }
+
+.presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.preset {
+  border: 1px solid var(--linea); background: var(--panel-2); color: var(--muted);
+  font: inherit; font-size: 11px; padding: 6px 9px; border-radius: 7px; cursor: pointer;
+}
+.preset:hover { color: var(--accent); border-color: var(--accent); }
+.nota { font-size: 11.5px; color: var(--suave); margin: 12px 0 0; }
+
+.lista { margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: 13px; }
+.lista li { margin-bottom: 7px; }
+.lista b { color: var(--texto); }
+.solucion h2 { font-size: 19px; }
+.solucion .pasos { margin-top: 12px; }
+
+/* Mensajes de error dentro de la grilla: ocupan todo el ancho. */
+#sitios > .aviso { grid-column: 1 / -1; }
+
+/* Mapa lunar: fondo oscuro para que el mosaico respire y los controles se lean. */
+.mapa-lunar {
+  height: 440px;
+  border: 1px solid var(--linea);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #05070f;
+}
+.mapa-lunar.leaflet-container { background: #05070f; }
+.mapa-lunar .leaflet-control-attribution {
+  background: rgba(5, 7, 15, 0.78);
+  color: var(--muted);
+  font-size: 10px;
+}
+.mapa-lunar .leaflet-control-attribution a { color: var(--accent); }
+.mapa-lunar .leaflet-bar a {
+  background: var(--panel-2);
+  color: var(--texto);
+  border-color: var(--linea);
+}
+.mapa-lunar .leaflet-bar a:hover { background: var(--panel); color: var(--accent); }
+
+/* Marcadores numerados: círculo con el color del sitio. */
+.marcador-lunar span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--panel);
+  border: 2px solid var(--color-sitio, var(--accent));
+  color: var(--texto);
+  font: 700 11px/1 var(--mono);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--color-sitio, var(--accent)) 60%, transparent);
+}
+.mapa-lunar .leaflet-popup-content { font-size: 12px; line-height: 1.5; }
+
+@media (max-width: 700px) {
+  .mapa-lunar { height: 320px; }
+}
+
+@media (max-width: 980px) {
+  .sitio-metric { font-size: 26px; }
+}

@@ -1,0 +1,99 @@
+:root { --accent: #ffd166; --accent-2: #ffb703; }
+
+/* Pestañas tipo "aula": la activa parece una pestaña de pizarrón. */
+.tabs { border-bottom-color: color-mix(in srgb, var(--accent) 35%, var(--linea)); }
+.tab.activo {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 14%, transparent), transparent);
+  border-radius: 10px 10px 0 0;
+}
+
+.fila-titulo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.fila-titulo h2 { margin: 0; }
+
+/* Tarjetas del ranking de lanzadores. */
+.lanzador {
+  border: 1px solid var(--linea);
+  border-radius: 12px;
+  padding: 16px;
+  background: var(--panel);
+  position: relative;
+  overflow: hidden;
+}
+.lanzador.ganador {
+  border-color: color-mix(in srgb, var(--accent) 65%, var(--linea));
+  box-shadow: 0 0 30px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.lanzador .cab { display: flex; align-items: start; justify-content: space-between; gap: 10px; }
+.lanzador h3 { margin: 0; font-size: 17px; line-height: 1.2; }
+.lanzador .agencia { font-size: 11px; color: var(--suave); font-family: var(--mono); }
+.lanzador .score { font-family: var(--mono); font-size: 30px; font-weight: 700; color: var(--accent); line-height: 1; }
+.lanzador .barra { height: 6px; border-radius: 99px; background: var(--panel-2); overflow: hidden; margin: 12px 0; }
+.lanzador .barra i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--accent-2), var(--accent)); }
+.lanzador .datos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 12px; font-size: 11.5px; color: var(--muted); }
+.lanzador .datos div { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px dashed var(--linea); padding-bottom: 3px; }
+.lanzador .datos b { color: var(--texto); font-family: var(--mono); }
+.lanzador .desglose { font-family: var(--mono); font-size: 10px; color: var(--suave); margin-top: 10px; }
+.lanzador .nota-lanzador { font-size: 11.5px; color: var(--muted); margin: 8px 0 0; }
+.lanzador .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+.lanzador .tags span { font-family: var(--mono); font-size: 9.5px; padding: 3px 6px; border: 1px solid var(--linea); border-radius: 5px; color: var(--muted); }
+
+/* Descartes: lista compacta, no tarjetas (son muchas). */
+.lista-descartes { margin: 0; padding-left: 18px; columns: 2; column-gap: 22px; font-size: 12px; color: var(--muted); }
+.lista-descartes li { margin-bottom: 6px; break-inside: avoid; }
+.lista-descartes b { color: var(--texto); }
+
+/* Etiqueta de valores en sliders. */
+#v-masa, #v-presupuesto { color: var(--accent); font-size: 14px; }
+
+/* Panel de pesos: sliders con valor visible y suma siempre a la vista. */
+.pesos {
+  border: 1px solid var(--linea);
+  border-radius: 10px;
+  padding: 12px;
+  background: var(--panel-2);
+}
+.pesos h3 { margin: 0; font-size: 14px; }
+.peso { font-size: 11px; }
+.peso b, #v-suma { color: var(--accent); font-size: 13px; }
+.suma-pesos {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  border: 1px solid var(--linea);
+  border-radius: 99px;
+  padding: 4px 9px;
+}
+#v-suma-nota { color: var(--suave); font-size: 10px; }
+.preset {
+  border: 1px solid var(--linea);
+  background: var(--panel);
+  color: var(--muted);
+  font: inherit;
+  font-size: 11px;
+  padding: 6px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.preset:hover { color: var(--accent); border-color: var(--accent); }
+/* Vehículo que cuesta más que el presupuesto: sigue compitiendo, pero avisado. */
+.lanzador .tags .tag-alerta {
+  color: var(--bad);
+  border-color: color-mix(in srgb, var(--bad) 55%, var(--linea));
+}
+#params { font-size: 11.5px; color: var(--suave); }
+
+.nota { font-size: 11.5px; color: var(--suave); margin: 12px 0 0; }
+.lista { margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: 13px; }
+.lista li { margin-bottom: 7px; }
+.lista b { color: var(--texto); }
+.solucion h2 { font-size: 19px; }
+.solucion .pasos { margin-top: 12px; }
+
+/* Mensajes de estado en la grilla del ranking. */
+#ranking > .aviso { grid-column: 1 / -1; }
+
+@media (max-width: 700px) {
+  .lista-descartes { columns: 1; }
+  .lanzador .datos { grid-template-columns: 1fr; }
+  .lanzador .score { font-size: 26px; }
+}

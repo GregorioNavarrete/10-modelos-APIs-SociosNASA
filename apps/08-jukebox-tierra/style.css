@@ -1,0 +1,112 @@
+:root { --accent: #d86bff; --accent-2: #7c5cff; }
+
+/* Pestañas con degradado de "álbum": la activa parece una pista seleccionada. */
+.tabs { border-bottom-color: color-mix(in srgb, var(--accent) 30%, var(--linea)); }
+.tab.activo {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 16%, transparent), transparent);
+  border-radius: 10px 10px 0 0;
+}
+
+.fila-titulo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.fila-titulo h2 { margin: 0; }
+
+/* Galería: tarjetas-botón con foco visible (accesibilidad por teclado). */
+.galeria {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 12px;
+}
+.epic {
+  appearance: none;
+  border: 1px solid var(--linea);
+  background: var(--panel-2);
+  border-radius: 12px;
+  padding: 8px;
+  text-align: left;
+  color: var(--texto);
+  font: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color var(--trans), transform var(--trans), box-shadow var(--trans);
+}
+.epic:hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--linea)); transform: translateY(-2px); }
+.epic.activa { border-color: var(--accent); box-shadow: 0 0 22px color-mix(in srgb, var(--accent) 18%, transparent); }
+.epic:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.epic img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #05070f;
+  display: block;
+}
+.epic-hora { font-family: var(--mono); font-size: 10px; letter-spacing: .05em; color: var(--accent); }
+.epic-caption {
+  font-size: 11.5px;
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.epic-coords { font-family: var(--mono); font-size: 9.5px; color: var(--suave); }
+
+/* Ficha accesible: nunca depende del color de la foto. */
+.ficha { border: 1px solid var(--linea); border-radius: 10px; padding: 12px; background: var(--panel-2); }
+.ficha-caption { color: var(--texto) !important; font-size: 13px; margin-bottom: 10px; }
+.ficha .kv { grid-template-columns: 110px 1fr; }
+
+/* Sonificación: controles y barra de progreso. */
+.audio-controles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--linea);
+}
+.audio-estado { flex: 1 1 220px; min-width: 160px; display: grid; gap: 5px; }
+.audio-barra {
+  height: 6px;
+  border-radius: 99px;
+  background: var(--linea);
+  overflow: hidden;
+}
+.audio-barra i {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent-2), var(--accent));
+  transition: width 0.1s linear;
+}
+#audio-texto { font-size: 11px; color: var(--suave); font-family: var(--mono); }
+#btn-sonificar:disabled, #btn-detener:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+#mapa { height: 420px; }
+
+.presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.preset {
+  border: 1px solid var(--linea); background: var(--panel-2); color: var(--muted);
+  font: inherit; font-size: 11px; padding: 6px 9px; border-radius: 7px; cursor: pointer;
+}
+.preset:hover { color: var(--accent); border-color: var(--accent); }
+.nota { font-size: 11.5px; color: var(--suave); margin: 12px 0 0; }
+
+.lista { margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: 13px; }
+.lista li { margin-bottom: 7px; }
+.lista b { color: var(--texto); }
+.solucion h2 { font-size: 19px; }
+.solucion .pasos { margin-top: 12px; }
+
+@media (max-width: 700px) {
+  #mapa { height: 300px; }
+  .galeria { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .ficha .kv { grid-template-columns: 1fr; }
+}

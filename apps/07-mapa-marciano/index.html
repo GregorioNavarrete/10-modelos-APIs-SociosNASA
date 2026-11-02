@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="es" data-theme="oscuro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>07 · Mapa Marciano — Space Apps 10</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Barra superior compartida. -->
+  <header class="topbar">
+    <div class="topbar-in">
+      <a class="marca" href="/"><span class="marca-simbolo">✦</span><span>Space Apps 10<small>MAPA MARCIANO</small></span></a>
+      <span class="espacio"></span>
+      <a class="volver" href="/">← Panel</a>
+      <button class="tema" data-tema-boton aria-label="Cambiar tema"><span class="tema-icono">☀</span></button>
+    </div>
+  </header>
+
+  <!-- Cabecera: un sol marciano como unidad de planificación. -->
+  <div class="wrap app-head">
+    <p class="eyebrow">App 07 · Marte · Planificación de un sol</p>
+    <h1 class="titulo">Mapa Marciano</h1>
+    <p class="bajada">El clima que reporta Curiosity en Gale, la elevación solar en cuatro sitios candidatos y una ruta entre ellos medida en soles de rover. Movés la hora local y ves cómo cambia la luz, el riesgo de polvo y el costo de cada tramo.</p>
+    <div class="chips">
+      <span class="chip vivo" id="chip-fuente">consultando</span>
+      <span class="chip"><b>NASA</b> MSL Weather</span>
+      <span class="chip"><b>USGS</b> MOLA / CTX</span>
+      <span class="chip"><b>EMM</b> Hope (SDC)</span>
+      <span class="chip">Reto: Mars exploration</span>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="tabs" role="tablist" aria-label="Secciones de la app">
+      <button class="tab activo" data-tab="datos" role="tab" aria-selected="true">01 · Datos y solución</button>
+      <button class="tab" data-tab="docs" role="tab" aria-selected="false">02 · Documentación</button>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <!-- ================= SOLAPA 1 ================= -->
+    <section class="panel activo" data-panel="datos">
+      <!-- KPIs del último sol reportado por Curiosity (no es un pronóstico global). -->
+      <div class="grid grid-4" style="margin-top:18px">
+        <div class="tarjeta">
+          <span class="kicker">Sol marciano</span>
+          <div class="metric" id="m-sol">—</div>
+          <span class="delta" id="m-sol-sub">—</span>
+        </div>
+        <div class="tarjeta">
+          <span class="kicker">Temperatura mín / máx</span>
+          <div class="metric" id="m-temp" style="font-size:24px">—</div>
+          <span class="delta" id="m-temp-sub">Gale · MSL</span>
+        </div>
+        <div class="tarjeta">
+          <span class="kicker">Presión atmosférica</span>
+          <div class="metric" id="m-presion">—</div>
+          <span class="delta">Pa reportados</span>
+        </div>
+        <div class="tarjeta">
+          <span class="kicker">Opacidad del aire</span>
+          <div class="metric" id="m-opacidad" style="font-size:24px">—</div>
+          <span class="delta" id="m-opacidad-sub">polvo en suspensión</span>
+        </div>
+      </div>
+
+      <!-- Gráfico de la curva del sol (se completa al visitar horas) + controles. -->
+      <div class="grid grid-2-1" style="margin-top:16px">
+        <div class="tarjeta">
+          <div class="fila-titulo">
+            <h2>Curva del sol por sitio</h2>
+            <span class="badge" id="badge-ls">—</span>
+          </div>
+          <div id="chart-sol">
+            <div class="cargando"><span class="spinner" aria-hidden="true"></span><span>Consultando la posición del Sol…</span></div>
+          </div>
+          <div class="leyenda" id="leyenda-sitios"></div>
+          <p class="nota">Cada punto es una consulta real al endpoint para esa hora local. Movés el slider (o completás la curva) para sumar horas; la forma final muestra el mediodía y las horas de luz de cada sitio.</p>
+          <div class="acciones" style="margin-top:10px">
+            <button class="boton secundario" id="btn-curva" type="button">Completar curva 0–24 h</button>
+          </div>
+        </div>
+
+        <div class="tarjeta">
+          <span class="kicker">Control de hora</span>
+          <h2>Hora local en Marte</h2>
+          <label class="campo" style="margin-top:8px">Hora local (0–24) · <b id="v-hora">12</b>:00
+            <input id="hora" type="range" min="0" max="24" step="1" value="12" aria-label="Hora local marciana">
+          </label>
+          <div class="presets" role="group" aria-label="Horas predefinidas">
+            <button class="preset" type="button" data-hora="0">00:00</button>
+            <button class="preset" type="button" data-hora="6">06:00</button>
+            <button class="preset" type="button" data-hora="12">12:00</button>
+            <button class="preset" type="button" data-hora="18">18:00</button>
+          </div>
+          <p class="nota" id="nota-subsolar">—</p>
+          <p class="aviso" style="margin-top:10px">Este endpoint depende de la API pública de MSL y no tiene respaldo: si NASA no responde en 20 s, la app corta la espera y lo avisa.</p>
+        </div>
+      </div>
+
+      <!-- Tarjetas de sitio con riesgo operativo. -->
+      <div class="tarjeta" style="margin-top:16px">
+        <div class="fila-titulo">
+          <h2>Sitios y riesgo</h2>
+          <span class="badge" id="badge-subsolar">—</span>
+        </div>
+        <div class="grid grid-4" id="sitios">
+          <div class="cargando"><span class="spinner" aria-hidden="true"></span><span>Consultando clima de Marte…</span></div>
+        </div>
+        <p class="nota">Índice de riesgo = 35 % pendiente normalizada + 25 % altitud (a mayor altitud, menos atmósfera) + 25 % estación de polvo + 15 % polvo del sitio. Es un criterio de demo, no un estándar de la NASA.</p>
+      </div>
+
+      <!-- Ruta entre sitios: el costo logístico de moverse. -->
+      <div class="tarjeta" style="margin-top:16px">
+        <div class="fila-titulo">
+          <h2>Ruta sugerida entre sitios</h2>
+          <button class="boton secundario" id="btn-json" type="button">Descargar JSON</button>
+        </div>
+        <div class="tabla-wrap">
+          <table>
+            <thead>
+              <tr><th>Tramo</th><th class="num">Distancia</th><th class="num">Soles de rover</th><th>Riesgo</th></tr>
+            </thead>
+            <tbody id="tabla-ruta"><tr><td colspan="4">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+        <p class="nota">Soles de rover = km ÷ (0,09 km/h × 24,66 h/sol). Es una velocidad promedio de referencia: el terreno real y la autonomía de baterías mandan.</p>
+      </div>
+
+      <!-- Negocio y solución. -->
+      <div class="grid grid-2" style="margin-top:16px">
+        <div class="tarjeta solucion">
+          <span class="kicker">Modelo de negocio</span>
+          <h2>Planificar EVA con luz y polvo</h2>
+          <p><strong>Problema:</strong> una caminata marciana se planifica con luz, temperatura y polvo cambiantes; los equipos científicos necesitan saber cuándo y dónde es seguro operar.</p>
+          <ul class="lista">
+            <li><b>Usuario primario:</b> equipos de operaciones de misión y planificadores de EVA.</li>
+            <li><b>Usuario secundario:</b> laboratorios de geología planetaria, educación y divulgación.</li>
+            <li><b>Ingreso:</b> licencia institucional + API de ventanas operativas para simuladores.</li>
+            <li><b>Costo:</b> clima y efemérides abiertos; el costo real es integración con el plan de misión.</li>
+          </ul>
+        </div>
+        <div class="tarjeta solucion">
+          <span class="kicker">Solución probable</span>
+          <h2>Un tablero para decidir la caminata</h2>
+          <div class="pasos">
+            <div class="paso"><p><b>Contexto:</b> leer sol, Ls y opacidad actuales para saber en qué estación está la misión.</p></div>
+            <div class="paso"><p><b>Luz:</b> calcular elevación solar y horas de luz por sitio a la hora de salida.</p></div>
+            <div class="paso"><p><b>Riesgo:</b> combinar pendiente, altitud y polvo en un índice comparable.</p></div>
+            <div class="paso"><p><b>Ruta:</b> presupuestar kilómetros y soles de rover antes de asignar energía y tripulación.</p></div>
+          </div>
+          <p class="aviso" style="margin-top:10px">MVP de escritorio: el clima es de Gale y las rutas son líneas rectas entre sitios. No reemplaza un plan de misión ni un modelo de terreno validado.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SOLAPA 2 ================= -->
+    <section class="panel" data-panel="docs" hidden>
+      <div class="doc grid" style="margin-top:18px">
+        <div class="tarjeta">
+          <h2>Qué API usa esta app</h2>
+          <table>
+            <thead><tr><th>Fuente</th><th>Uso</th><th>Auth</th><th>Límite / nota</th></tr></thead>
+            <tbody>
+              <tr><td>NASA MSL Weather</td><td>Sol, temperatura, presión, opacidad</td><td>Abierta</td><td>Solo Gale; reporte diario, no pronóstico</td></tr>
+              <tr><td>USGS MOLA / CTX</td><td>Topografía y elevación de sitios</td><td>Abierta</td><td>Raster global; requiere recorte</td></tr>
+              <tr><td>EMM SDC (Hope)</td><td>Clima global marciano (mejora)</td><td>Registro gratuito</td><td>API con cuota y token</td></tr>
+              <tr><td>NAIF SPICE</td><td>Ls, órbita y geometría solar</td><td>Abierta</td><td>Kernels de Marte</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Cómo se usa (ejemplo real)</h2>
+          <pre><code>curl "https://mars.nasa.gov/rss/api/?feed=weather&category=msl&feedtype=json"
+curl "http://localhost:3000/api/marte?hora=12"</code></pre>
+          <p>El servidor toma el último sol del feed MSL, calcula la declinación solar a partir de Ls, deriva la elevación para cada sitio y arma la ruta con distancias esféricas. El día marciano se modela como 24 h 39 min.</p>
+          <p class="enlace"><a href="https://mars.nasa.gov/msl/weather/" target="_blank" rel="noopener">mars.nasa.gov/msl/weather/</a></p>
+          <p class="enlace"><a href="https://astrogeology.usgs.gov/search?target=Mars" target="_blank" rel="noopener">astrogeology.usgs.gov — Marte</a></p>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Qué más se puede pedir</h2>
+          <ul>
+            <li><b>EMM SDC:</b> clima global de Hope, no solo el punto de Gale.</li>
+            <li><b>MOLA / HRSC:</b> pendientes reales y rutas que sigan el terreno.</li>
+            <li><b>MRO MARCI:</b> imágenes de polvo y nubes a escala regional.</li>
+            <li><b>MEDA / Perseverance:</b> temperatura y viento en Jezero.</li>
+            <li><b>SPICE de alta fidelidad:</b> hora solar local exacta por longitud.</li>
+          </ul>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Alcance y reglas</h2>
+          <p><b>Licencia:</b> datos NASA y USGS abiertos con atribución; EMM SDC exige registro y aceptación de términos.</p>
+          <p><b>No usar:</b> imágenes comerciales o militares, datos de China, ni presentar este índice como pronóstico oficial de polvo.</p>
+          <p><b>Límite técnico:</b> la opacidad es la de Gale en el último sol informado. El modelo de elevación usa una declinación derivada de Ls y una hora solar uniforme; no corrige longitud ni relieve.</p>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Cómo mejorar para otros servicios</h2>
+          <div class="pasos">
+            <div class="paso"><p>Reemplazar la hora solar simplificada por SPICE con longitud y ecuación de tiempo marciana.</p></div>
+            <div class="paso"><p>Integrar EMM SDC para un campo de polvo global en lugar de un único punto.</p></div>
+            <div class="paso"><p>Calcular rutas sobre el DEM con pendientes y obstáculos, no en línea recta.</p></div>
+            <div class="paso"><p>Exportar ventanas EVA a un calendario operativo y conectarlas con el plan de energía del rover.</p></div>
+          </div>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Fuentes citadas</h2>
+          <ul>
+            <li>NASA MSL — feed de clima de Curiosity en Gale.</li>
+            <li>USGS Astrogeology — MOLA y mosaicos CTX.</li>
+            <li>Emirates Mars Mission — Science Data Center (Hope).</li>
+            <li>NAIF/JPL — SPICE para geometría Marte–Sol.</li>
+            <li>Reglas Space Apps 2026 — licencias y uso de datos.</li>
+          </ul>
+          <p class="aviso">Este endpoint no tiene respaldo: si la API de NASA falla, se muestra un toast y el chip queda en “sin conexión”. No hay <code>data/respaldo/marte.json</code>.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pie"><div class="wrap"><span>Mapa Marciano · demo con datos abiertos</span><span>MSL © NASA/JPL-Caltech · MOLA © USGS</span></div></footer>
+
+  <script src="/js/theme.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

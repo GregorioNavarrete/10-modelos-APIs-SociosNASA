@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="es" data-theme="oscuro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>06 · Base Lunar — Space Apps 10</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Barra superior compartida. -->
+  <header class="topbar">
+    <div class="topbar-in">
+      <a class="marca" href="/"><span class="marca-simbolo">✦</span><span>Space Apps 10<small>BASE LUNAR</small></span></a>
+      <span class="espacio"></span>
+      <a class="volver" href="/">← Panel</a>
+      <button class="tema" data-tema-boton aria-label="Cambiar tema"><span class="tema-icono">☀</span></button>
+    </div>
+  </header>
+
+  <!-- Cabecera: el reto es comparar sitios polares, no elegir un ganador absoluto. -->
+  <div class="wrap app-head">
+    <p class="eyebrow">App 06 · Luna · Iluminación y comunicaciones</p>
+    <h1 class="titulo">Base Lunar</h1>
+    <p class="bajada">Cuatro sitios del polo sur lunar comparados con la misma geometría Sol–Luna–Tierra cada 3 horas. Iluminación solar, visibilidad de la Tierra y la peor racha de oscuridad: las tres variables que deciden dónde puede vivir una base y qué ventanas tiene para hablar con el control de misión.</p>
+    <div class="chips">
+      <span class="chip vivo" id="chip-fuente">consultando</span>
+      <span class="chip"><b>NASA</b> LRO / LOLA</span>
+      <span class="chip"><b>NAIF</b> SPICE</span>
+      <span class="chip"><b>NASA</b> Moon Trek</span>
+      <span class="chip">Reto: Lunar surface</span>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="tabs" role="tablist" aria-label="Secciones de la app">
+      <button class="tab activo" data-tab="datos" role="tab" aria-selected="true">01 · Datos y solución</button>
+      <button class="tab" data-tab="docs" role="tab" aria-selected="false">02 · Documentación</button>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <!-- ================= SOLAPA 1 ================= -->
+    <section class="panel activo" data-panel="datos">
+      <!-- KPIs: los extremos de la comparación y el contexto geométrico. -->
+      <div class="grid grid-4" style="margin-top:18px">
+        <div class="tarjeta">
+          <span class="kicker">Mejor iluminación</span>
+          <div class="metric" id="m-ilum">—</div>
+          <span class="delta" id="m-ilum-sub">—</span>
+        </div>
+        <div class="tarjeta">
+          <span class="kicker">Mejor enlace con Tierra</span>
+          <div class="metric" id="m-com">—</div>
+          <span class="delta" id="m-com-sub">—</span>
+        </div>
+        <div class="tarjeta">
+          <span class="kicker">Punto subsolar</span>
+          <div class="metric" id="m-subsolar" style="font-size:26px">—</div>
+          <span class="delta">lat / lon selenográfica</span>
+        </div>
+        <div class="tarjeta">
+          <span class="kicker">Ventana evaluada</span>
+          <div class="metric" id="m-ventana">—</div>
+          <span class="delta" id="m-ventana-sub">paso de 3 h</span>
+        </div>
+      </div>
+
+      <!-- Tarjetas de sitio: una por candidato, generadas en app.js. -->
+      <div class="tarjeta" style="margin-top:16px">
+        <div class="fila-titulo">
+          <h2>Sitios candidatos</h2>
+          <span class="badge" id="badge-inicio">—</span>
+        </div>
+        <div class="grid grid-4" id="sitios">
+          <div class="cargando"><span class="spinner" aria-hidden="true"></span><span>Calculando geometría lunar…</span></div>
+        </div>
+        <p class="nota">Iluminación = porcentaje de la ventana con el Sol sobre el horizonte local. Comunicación = porcentaje con la Tierra por encima de −0,5°. Oscuridad máxima = racha continua sin Sol.</p>
+      </div>
+
+      <!-- Mapa lunar: mosaico público LRO WAC servido como tiles XYZ por Moon Trek.
+           Encima se puede activar un sombreado de relieve LOLA (misma grilla XYZ)
+           con opacidad regulable. Los cuatro marcadores usan lat/lon selenográficas
+           y muestran el resumen de la ventana calculada. -->
+      <div class="tarjeta" style="margin-top:16px">
+        <div class="fila-titulo">
+          <h2>Mapa de los sitios</h2>
+          <span class="badge" id="badge-mapa">LRO WAC 303 ppd + LOLA</span>
+        </div>
+        <div id="mapa-lunar" class="mapa-lunar" role="img" aria-label="Mapa equirectangular de la Luna con los cuatro sitios candidatos marcados"></div>
+        <!-- Controles del relieve: botón de activar/desactivar + opacidad. -->
+        <div class="mapa-controles">
+          <button class="boton secundario" id="btn-relieve" type="button" aria-pressed="false">Mostrar relieve LOLA</button>
+          <label class="campo relieve-opacidad">Opacidad del relieve · <b id="v-relieve">45</b> %
+            <input id="relieve-opacidad" type="range" min="10" max="100" step="5" value="45" aria-label="Opacidad de la capa de relieve LOLA">
+          </label>
+          <span class="relieve-estado" id="relieve-estado" aria-live="polite">El relieve LOLA está apagado.</span>
+        </div>
+        <p class="nota">Mosaico global <b>LRO WAC</b> (NASA/GSFC/ASU) y sombreado <b>LOLA</b> (NASA/GSFC) servidos como tiles XYZ por <b>NASA Moon Trek</b>; la app solo los consume y los atribuye. Los marcadores usan latitud/longitud selenográficas y muestran la iluminación de la ventana calculada. Límite: es una imagen de referencia, no un modelo de terreno para aterrizaje ni un DEM para calcular pendientes.</p>
+      </div>
+
+      <!-- Serie temporal comparativa: Sol por un lado, Tierra por el otro. -->
+      <div class="grid grid-2" style="margin-top:16px">
+        <div class="tarjeta">
+          <h2>Elevación del Sol por sitio</h2>
+          <p>Cada línea es un sitio; los valores negativos son noche local. El eje está en grados sobre el horizonte.</p>
+          <div id="chart-sol"></div>
+          <div class="leyenda" id="leyenda-sol"></div>
+        </div>
+        <div class="tarjeta">
+          <h2>Elevación de la Tierra por sitio</h2>
+          <p>La Tierra casi no se mueve en el cielo lunar: si está baja, el enlace directo se corta por topografía. Acá no se modela el relieve.</p>
+          <div id="chart-tierra"></div>
+          <div class="leyenda" id="leyenda-tierra"></div>
+        </div>
+      </div>
+
+      <!-- Tabla comparativa con parámetros estáticos de cada sitio. -->
+      <div class="tarjeta" style="margin-top:16px">
+        <div class="fila-titulo">
+          <h2>Comparación de sitios</h2>
+          <button class="boton secundario" id="btn-json" type="button">Descargar JSON</button>
+        </div>
+        <div class="tabla-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Sitio</th><th class="num">Elevación</th><th class="num">Pendiente</th><th>Hielo</th>
+                <th class="num">Horizonte</th><th class="num">Iluminación</th><th class="num">Comunicación</th><th class="num">Oscuridad máx.</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-sitios"><tr><td colspan="8">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+        <p class="nota">Hielo y pendiente son referencias cualitativas para comparar; no son cotas de ingeniería ni un mapa de recursos certificado.</p>
+      </div>
+
+      <!-- Controles: ventana de simulación y presets de demo rápida. -->
+      <div class="tarjeta" style="margin-top:16px">
+        <span class="kicker">Simulación</span>
+        <h2>Ajustá la ventana</h2>
+        <div class="grid grid-3" style="margin-top:8px;align-items:end">
+          <label class="campo">Días a simular (7–30)<input id="dias" type="number" min="7" max="30" step="1" value="14"></label>
+          <div class="acciones"><button class="boton" id="btn-simular" type="button">Recalcular ventana</button></div>
+          <div class="presets" role="group" aria-label="Ventanas predefinidas" style="margin-top:0">
+            <button class="preset" type="button" data-dias="7">7 días</button>
+            <button class="preset" type="button" data-dias="14">14 días</button>
+            <button class="preset" type="button" data-dias="30">30 días</button>
+          </div>
+        </div>
+        <p class="nota">Ventanas más largas exponen la racha de oscuridad real; ventanas cortas muestran el patrón de iluminación de una misión corta.</p>
+      </div>
+
+      <!-- Negocio y solución. -->
+      <div class="grid grid-2" style="margin-top:16px">
+        <div class="tarjeta solucion">
+          <span class="kicker">Modelo de negocio</span>
+          <h2>Vender ventanas, no promesas</h2>
+          <p><strong>Problema:</strong> planificar una base polar exige saber cuántas horas de sol y de enlace hay por sitio, y los estudios suelen quedar en PDFs estáticos.</p>
+          <ul class="lista">
+            <li><b>Usuario primario:</b> equipos de diseño de misión y agencias espaciales.</li>
+            <li><b>Usuario secundario:</b> proveedores de energía, comunicaciones e ISRU (hielo).</li>
+            <li><b>Ingreso:</b> licencia por estudio de sitio + API de ventanas para simuladores.</li>
+            <li><b>Costo:</b> efemérides y topografía abiertas; el costo real es validación con modelos de alta fidelidad.</li>
+          </ul>
+        </div>
+        <div class="tarjeta solucion">
+          <span class="kicker">Solución probable</span>
+          <h2>Comparar antes de comprometer masa</h2>
+          <div class="pasos">
+            <div class="paso"><p><b>Calcular:</b> iluminación y enlace cada 3 h para cada sitio con la misma geometría.</p></div>
+            <div class="paso"><p><b>Filtrar:</b> descartar sitios con oscuridad mayor a la autonomía de baterías prevista.</p></div>
+            <div class="paso"><p><b>Priorizar:</b> cruzar ventanas de sol y de Tierra con el perfil de la misión (energía + downlink).</p></div>
+            <div class="paso"><p><b>Validar:</b> repetir con horizonte topográfico LOLA y SPICE de alta precisión antes de una decisión real.</p></div>
+          </div>
+          <p class="aviso" style="margin-top:10px">Modelo geométrico de baja precisión: no incluye horizonte topográfico local ni libraciones finas. Sirve para comparar sitios, no para certificar un aterrizaje.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SOLAPA 2 ================= -->
+    <section class="panel" data-panel="docs" hidden>
+      <div class="doc grid" style="margin-top:18px">
+        <div class="tarjeta">
+          <h2>Qué API usa esta app</h2>
+          <table>
+            <thead><tr><th>Fuente</th><th>Uso</th><th>Auth</th><th>Límite / nota</th></tr></thead>
+            <tbody>
+              <tr><td>NASA LRO / LOLA</td><td>Topografía y referencia de elevación</td><td>Abierta</td><td>Modelo global; el relieve local necesita mosaicos</td></tr>
+              <tr><td>NAIF SPICE</td><td>Efemérides Sol–Luna–Tierra</td><td>Abierta</td><td>Kernels livianos; requiere descarga</td></tr>
+              <tr><td>NASA Moon Trek</td><td>Mosaico LRO WAC 303 ppd + sombreado LOLA 128 ppd en tiles XYZ</td><td>Abierta</td><td>Servicio de tiles; atribución a NASA/GSFC/ASU y LOLA</td></tr>
+              <tr><td>LRO Diviner</td><td>Temperaturas superficiales (mejora)</td><td>Abierta</td><td>Productos por franja orbital</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Cómo se usa (ejemplo real)</h2>
+          <pre><code>curl "http://localhost:3000/api/lunar?dias=14"</code></pre>
+          <p>El servidor arma la rotación lunar y los vectores Sol/Tierra con fórmulas SPICE simplificadas y devuelve, por sitio, una serie cada 3 h con <code>solEl</code>, <code>tierraEl</code> e <code>iluminado</code>, más el resumen de porcentajes.</p>
+          <p>El mapa usa la plantilla pública de Moon Trek <code>.../LRO_WAC_Mosaic_Global_303ppd/1.0.0/default/default028mm/{z}/{y}/{x}.png</code> con un CRS propio: en el nivel <code>z</code> hay 2<sup>z+1</sup> columnas y 2<sup>z</sup> filas. Por eso los tokens <code>{z}/{y}/{x}</code> se pasan tal cual a Leaflet.</p>
+          <p>El relieve usa la plantilla <code>.../LRO_LOLA_Shade_Global_128ppd_v04/1.0.0/default/default028mm/{z}/{y}/{x}.png</code>, verificada hasta <code>z=5</code> (en <code>z=6</code> y <code>z=7</code> el servidor devuelve 404). Por eso la capa se declara con <code>maxNativeZoom: 5</code>: Leaflet reescala esos tiles cuando el mapa está en zooms mayores. La opacidad se controla con <code>setOpacity()</code> y la capa queda por encima del mosaico WAC pero debajo de los marcadores.</p>
+          <p class="enlace"><a href="https://naif.jpl.nasa.gov/naif/" target="_blank" rel="noopener">naif.jpl.nasa.gov/naif/</a></p>
+          <p class="enlace"><a href="https://trek.nasa.gov/moon/" target="_blank" rel="noopener">trek.nasa.gov/moon/</a></p>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Qué más se puede pedir</h2>
+          <ul>
+            <li><b>Horizonte topográfico LOLA:</b> el dato que convierte una estimación en una ventana confiable.</li>
+            <li><b>Temperatura superficial:</b> ciclos térmicos que castigan baterías y sellos.</li>
+            <li><b>Mapas de hielo:</b> depósitos de agua en cráteres en sombra permanente.</li>
+            <li><b>Mosaicos LRO WAC:</b> imagen base de alta resolución para ubicar cada sitio.</li>
+            <li><b>Relieve LOLA:</b> sombreado que hace visibles cráteres y escarpes; ya se puede activar sobre el mapa.</li>
+            <li><b>Curvas de nivel y DEM:</b> pendientes reales derivadas de LOLA para aterrizaje y movilidad.</li>
+            <li><b>Rugosidad del terreno:</b> pendientes para aterrizaje y movilidad del rover.</li>
+            <li><b>SPICE de alta fidelidad:</b> libraciones y nutación con kernels oficiales.</li>
+          </ul>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Alcance y reglas</h2>
+          <p><b>Licencia:</b> datos NASA abiertos; atribución a LRO/LOLA, NAIF y Moon Trek. El mosaico LRO WAC es de NASA/GSFC/ASU y el sombreado de relieve LOLA es de NASA/GSFC; ambos se consumen desde el servicio público de tiles de Moon Trek. El código de la app es Apache 2.0.</p>
+          <p><b>No usar:</b> imágenes comerciales o militares, datos de misiones sin licencia clara, ni datos de China por reglas del evento.</p>
+          <p><b>Límite técnico:</b> la iluminación es puramente geométrica (Sol sobre un horizonte plano de referencia). Un cráter profundo puede estar a oscuras aunque el Sol esté a 10° de elevación.</p>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Cómo mejorar para otros servicios</h2>
+          <div class="pasos">
+            <div class="paso"><p>Integrar kernels SPICE oficiales y un modelo de horizonte por azimut derivado del DEM LOLA.</p></div>
+            <div class="paso"><p>Agregar temperatura superficial y dosis de radiación para dimensionar energía y blindaje.</p></div>
+            <div class="paso"><p>Permitir sitios propios (lat/lon/elevación) y exportar un calendario ICS de ventanas de enlace.</p></div>
+            <div class="paso"><p>Conectar el resultado a un simulador de misión o a un visor 3D del terreno.</p></div>
+          </div>
+        </div>
+
+        <div class="tarjeta">
+          <h2>Fuentes citadas</h2>
+          <ul>
+            <li>NASA LRO — Lunar Orbiter Laser Altimeter (LOLA).</li>
+            <li>NAIF/JPL — SPICE toolkit y kernels de efemérides.</li>
+            <li>NASA Moon Trek — capas y visualización lunar.</li>
+            <li>NASA/GSFC/ASU — mosaico global LRO WAC 303 ppd servido por Moon Trek.</li>
+            <li>NASA/GSFC — sombreado de relieve LOLA 128 ppd servido por Moon Trek.</li>
+            <li>NASA LRO Diviner — temperaturas superficiales.</li>
+            <li>Reglas Space Apps 2026 — licencias y uso de datos.</li>
+          </ul>
+          <p class="aviso">Si el cálculo falla, la app avisa con un toast y apaga el chip; aún no existe <code>data/respaldo/lunar.json</code>.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pie"><div class="wrap"><span>Base Lunar · demo con datos abiertos</span><span>LOLA © NASA / GSFC · SPICE © NAIF/JPL</span></div></footer>
+
+  <script src="/js/theme.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

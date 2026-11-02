@@ -1,0 +1,76 @@
+:root { --accent: #4f8cff; --accent-2: #7c5cff; }
+
+/* Pestañas con línea de "instrumento": simple y estable. */
+.tabs { border-bottom-color: color-mix(in srgb, var(--accent) 30%, var(--linea)); }
+.tab.activo::after {
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: -1px; height: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+}
+.tab { position: relative; border-radius: 10px 10px 0 0; }
+
+.fila-titulo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.fila-titulo h2 { margin: 0; }
+
+/* Panel de resumen del umbral: número grande + texto. */
+.panel-resumen {
+  margin-top: 10px;
+  border: 1px solid var(--linea);
+  border-radius: 10px;
+  padding: 12px;
+  background: var(--panel-2);
+  font-size: 13px;
+  color: var(--muted);
+}
+.panel-resumen b { color: var(--accent); font-family: var(--mono); font-size: 22px; margin-right: 4px; }
+
+/* Rutas: borde neutro y estado "riesgo" con acento rojo. */
+.ruta-card {
+  border: 1px solid var(--linea);
+  border-radius: 12px;
+  padding: 14px;
+  background: var(--panel-2);
+  transition: border-color var(--trans), box-shadow var(--trans);
+}
+.ruta-card.riesgo {
+  border-color: color-mix(in srgb, var(--bad) 60%, var(--linea));
+  box-shadow: 0 0 24px color-mix(in srgb, var(--bad) 12%, transparent);
+}
+.ruta-cab { display: flex; align-items: start; justify-content: space-between; gap: 8px; }
+.ruta-cab h3 { font-size: 14px; margin: 0; line-height: 1.3; }
+.ruta-umbral { font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--accent); margin: 8px 0 4px; }
+.ruta-card p { margin: 0 0 8px; font-size: 12.5px; }
+.tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.tags span { font-family: var(--mono); font-size: 9.5px; padding: 3px 6px; border: 1px solid var(--linea); border-radius: 5px; color: var(--muted); }
+
+/* Alertas SWPC: lista con scroll para no empujar el resto de la página. */
+.alertas { display: grid; gap: 10px; max-height: 420px; overflow: auto; padding-right: 4px; }
+.alerta { border: 1px solid var(--linea); border-left: 2px solid var(--accent); border-radius: 0 10px 10px 0; padding: 10px 12px; background: var(--panel-2); }
+.alerta-cab { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.alerta-cab time { font-family: var(--mono); font-size: 10px; color: var(--suave); }
+.alerta h3 { font-size: 13px; margin: 0 0 4px; }
+.alerta p { margin: 0; font-size: 11.5px; color: var(--muted); }
+
+.presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.preset {
+  border: 1px solid var(--linea); background: var(--panel-2); color: var(--muted);
+  font: inherit; font-size: 11px; padding: 6px 9px; border-radius: 7px; cursor: pointer;
+}
+.preset:hover { color: var(--accent); border-color: var(--accent); }
+.nota { font-size: 11.5px; color: var(--suave); margin: 12px 0 0; }
+
+#v-umbral { color: var(--accent); font-size: 15px; }
+
+.lista { margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: 13px; }
+.lista li { margin-bottom: 7px; }
+.lista b { color: var(--texto); }
+.solucion h2 { font-size: 19px; }
+.solucion .pasos { margin-top: 12px; }
+
+/* Mensajes de estado dentro de la grilla de corredores. */
+#rutas > .aviso { grid-column: 1 / -1; }
+
+@media (max-width: 980px) {
+  .ruta-umbral { font-size: 20px; }
+}

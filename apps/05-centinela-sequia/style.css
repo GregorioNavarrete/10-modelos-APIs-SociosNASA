@@ -1,0 +1,39 @@
+:root { --accent: #ffc247; --accent-2: #ff8a3d; }
+
+/* Pestañas tipo alerta meteorológica: subrayado cálido que respira. */
+.tabs { border-bottom-color: color-mix(in srgb, var(--accent) 30%, var(--linea)); }
+.tab { border-radius: 0; position: relative; }
+.tab.activo::after {
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: -1px; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  box-shadow: 0 0 12px var(--accent);
+  animation: pulso-sequia 2.8s ease-in-out infinite;
+}
+@keyframes pulso-sequia { 0%, 100% { opacity: .4; } 50% { opacity: 1; } }
+
+.fila-titulo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+.fila-titulo h2 { margin: 0; }
+
+/* Panel de consulta: mismos presets que las apps 01–04. */
+.presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.preset {
+  border: 1px solid var(--linea); background: var(--panel-2); color: var(--muted);
+  font: inherit; font-size: 11px; padding: 6px 9px; border-radius: 7px; cursor: pointer;
+}
+.preset:hover { color: var(--accent); border-color: var(--accent); }
+.nota { font-size: 11.5px; color: var(--suave); margin: 12px 0 0; }
+
+.lista { margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: 13px; }
+.lista li { margin-bottom: 7px; }
+.lista b { color: var(--texto); }
+
+.solucion h2 { font-size: 19px; }
+.solucion .pasos { margin-top: 12px; }
+
+/* La tabla mensual puede ser larga: el contenedor scrollea y el thead queda fijo. */
+#tabla-mensual td:nth-child(5) { color: var(--muted); }
+
+@media (max-width: 700px) {
+  .fila-titulo { align-items: flex-start; }
+}
